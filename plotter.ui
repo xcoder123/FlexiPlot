@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>392</width>
-    <height>313</height>
+    <width>412</width>
+    <height>357</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -36,6 +36,20 @@
        </item>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <item>
+          <widget class="QPushButton" name="saveBtn">
+           <property name="toolTip">
+            <string>Save current plot to CSV</string>
+           </property>
+           <property name="text">
+            <string>Save</string>
+           </property>
+           <property name="icon">
+            <iconset resource="icons.qrc">
+             <normaloff>:/images/document-save.png</normaloff>:/images/document-save.png</iconset>
+           </property>
+          </widget>
+         </item>
          <item>
           <spacer name="horizontalSpacer">
            <property name="orientation">
@@ -88,9 +102,9 @@
           <property name="geometry">
            <rect>
             <x>0</x>
-            <y>0</y>
-            <width>331</width>
-            <height>562</height>
+            <y>-385</y>
+            <width>351</width>
+            <height>678</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_6">
@@ -176,7 +190,7 @@
                    <number>10</number>
                   </property>
                   <property name="maximum">
-                   <number>1000</number>
+                   <number>1000000</number>
                   </property>
                   <property name="value">
                    <number>100</number>
@@ -394,6 +408,23 @@
                   </property>
                  </widget>
                 </item>
+                <item row="2" column="0">
+                 <widget class="QLabel" name="label_14">
+                  <property name="text">
+                   <string>Auto Fill Opacity:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="1">
+                 <widget class="QSpinBox" name="transparentSpinBox">
+                  <property name="minimum">
+                   <number>20</number>
+                  </property>
+                  <property name="maximum">
+                   <number>100</number>
+                  </property>
+                 </widget>
+                </item>
                 <item row="3" column="0">
                  <widget class="QLabel" name="label_13">
                   <property name="text">
@@ -455,20 +486,84 @@ border: 2px solid #000;</string>
                   </item>
                  </layout>
                 </item>
-                <item row="2" column="0">
-                 <widget class="QLabel" name="label_14">
+               </layout>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QGroupBox" name="groupBox_4">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="baseSize">
+              <size>
+               <width>0</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="title">
+              <string>Auto Write</string>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_8">
+              <item>
+               <layout class="QFormLayout" name="formLayout_4">
+                <item row="0" column="0">
+                 <widget class="QCheckBox" name="writeToFileCheckBox">
+                  <property name="toolTip">
+                   <string>Will write all results directly to the file you have specified. Similar to save button, but does it instantly and automatically. Useful for when one needs to do analysis later. Results will be in CSV</string>
+                  </property>
                   <property name="text">
-                   <string>Auto Fill Opacity:</string>
+                   <string>Write To File</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QLabel" name="label_15">
+                  <property name="text">
+                   <string>File:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="1">
+                 <layout class="QHBoxLayout" name="horizontalLayout_3">
+                  <item>
+                   <widget class="QLineEdit" name="writeToFileEdit">
+                    <property name="readOnly">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="openForWriteBtn">
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="icons.qrc">
+                      <normaloff>:/images/document-open-folder.png</normaloff>:/images/document-open-folder.png</iconset>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </item>
+                <item row="2" column="0">
+                 <widget class="QLabel" name="label_16">
+                  <property name="toolTip">
+                   <string>Specify what seperator should the save and auto file write function use</string>
+                  </property>
+                  <property name="text">
+                   <string>Seperator:</string>
                   </property>
                  </widget>
                 </item>
                 <item row="2" column="1">
-                 <widget class="QSpinBox" name="transparentSpinBox">
-                  <property name="minimum">
-                   <number>20</number>
-                  </property>
-                  <property name="maximum">
-                   <number>100</number>
+                 <widget class="QLineEdit" name="seperatorEdit">
+                  <property name="text">
+                   <string>;</string>
                   </property>
                  </widget>
                 </item>

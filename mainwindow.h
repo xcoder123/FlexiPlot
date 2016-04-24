@@ -16,7 +16,8 @@
 #include "settings.h"
 #include "config.h"
 #include "abstractwidget.h"
-#include "mapper.h"
+#include "terminal.h"
+//#include "mapper.h"
 
 namespace Ui {
 class MainWindow;
@@ -38,6 +39,7 @@ public slots:
 
 private slots:
     void readData();
+    void sendData(QByteArray data);
     void openSerialPort();
     void closeSerialPort();
     void addGraph();
@@ -52,6 +54,8 @@ private slots:
     void openDashDialog();
     void unsavedChanges(bool bb);
     void settingsChanged();
+    void openTerminal();
+
 
 private:
     Ui::MainWindow *ui;
@@ -64,6 +68,8 @@ private:
 
     int tick;
     int packetsDropped;
+
+    Terminal * terminal;
 };
 
 #endif // MAINWINDOW_H

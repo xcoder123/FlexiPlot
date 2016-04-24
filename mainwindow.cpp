@@ -43,6 +43,15 @@ MainWindow::MainWindow(QWidget *parent) :
 
     tick = 0;
     packetsDropped = 0;
+
+    terminal = new Terminal(this);
+    connect(ui->actionTerminal, SIGNAL(triggered(bool)), this, SLOT(openTerminal()));
+    connect(terminal, SIGNAL(writeToSerial(QByteArray)), this, SLOT(sendData(QByteArray)));
+}
+
+void MainWindow::openTerminal()
+{
+    terminal->show();
 }
 
 void MainWindow::settingsChanged()
@@ -323,7 +332,7 @@ void MainWindow::addGraph()
 
 void MainWindow::addMap()
 {
-    Config::getInstance()->setUnsavedChanges(true);
+    /*Config::getInstance()->setUnsavedChanges(true);
 
     Mapper* map = new Mapper(this);
     map->setId( QString("P%1").arg(plotters.size()) );
@@ -333,7 +342,7 @@ void MainWindow::addMap()
 
     connect(map, SIGNAL(destroyed()), this, SLOT(deleteGraph()));
 
-    plotters.append(map);
+    plotters.append(map);*/
 }
 
 void MainWindow::deleteGraph()
@@ -404,20 +413,34 @@ void MainWindow::closeSerialPort()
     ui->actionDisconnect->setEnabled( false );
 }
 
+void MainWindow::sendData(QByteArray data)
+{
+    if(serial->bytesToWrite() > 0)
+        serial->waitForBytesWritten(100);
+
+    serial->write(data);
+}
+
 void MainWindow::readData()
 {
     while(serial->canReadLine())
     {
 
-        QByteArray data = serial->readLine();
+        QByteArray data = serial->readLine();        
 
-        data = data.trimmed();
-//        qDebug() << data << data.at(0) << data.at(data.size()-1) << data.mid(1,data.size()-2);
+        //Huh strange. Qt 5.6, returns "\r{P1|PWM|255,0,0|0}\n" instead of "{P1|PWM|255,0,0|0}\r\n" as it was before
+        //Hence a quick solution to the problem
+        data.remove(0, 1);
+        data.remove(data.length()-1, 1);
+        data.append("\r\n");
 
-        if(data.at(0) == '{' && data.at(data.size()-1) == '}')
+        if(terminal->isVisible())
+            terminal->appendOutput( data );
+
+        if(data.at(0) == '{' && data.at(data.size()-3) == '}')
         {
 
-            QString tempStr( data.mid(1,data.size()-2) );
+            QString tempStr( data.mid(1,data.size()-4) );
 
             //verify that it is a valid packet!
             QRegExp rx_timeplot("[a-zA-Z0-9]+(\\|[a-zA-Z0-9 ]+\\|\\d{1,3},\\d{1,3},\\d{1,3}\\|\\-*\\d+(\\.{0,1}\\d+)*)+");

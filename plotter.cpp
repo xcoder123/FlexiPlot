@@ -74,7 +74,10 @@ Plotter::Plotter(QWidget *parent) :
 
     connect(ui->colorBtn, SIGNAL(clicked()), this, SLOT(openColorDialog()));
 
+    connect(ui->saveBtn, SIGNAL(clicked(bool)), this, SLOT(savePlot()));
 
+    connect(ui->openForWriteBtn, SIGNAL(clicked(bool)), this, SLOT(setFileForWriting()));
+    connect(ui->writeToFileCheckBox, SIGNAL(clicked(bool)), this, SLOT(startStopAutoWriting(bool)));
 
 
     // canvas
@@ -98,11 +101,126 @@ Plotter::Plotter(QWidget *parent) :
     currentColor = Qt::white;
 
 
+    autoWriteFile = NULL;
+
+}
+
+void Plotter::setFileForWriting()
+{
+    QString fileName = QFileDialog::getSaveFileName(
+                    this,
+                    "Save Plot to CSV",
+                    QString(),
+                    "Comma Seperated Values (*.csv);;All Files (*)"
+    );
+
+    ui->writeToFileEdit->setText( fileName );
 
 
 }
 
+void Plotter::startStopAutoWriting(bool start)
+{
+    if(ui->writeToFileEdit->text().isEmpty())
+    {
+        ui->writeToFileCheckBox->setChecked(false);
+        return;
+    }
 
+    if(start == true)
+    {
+        autoWriteFile = new QFile(ui->writeToFileEdit->text());
+
+        if(!autoWriteFile->open(QIODevice::WriteOnly))
+        {
+            qCritical() << "Error couldn't open file for writing";
+            return;
+        }
+
+        autoWriteStream.setDevice(autoWriteFile);
+
+        autoWriteStream.setRealNumberNotation( QTextStream::SmartNotation );
+
+        bool first = true;
+        foreach(QString key, plotItems.keys())
+        {
+            if(first)
+                first = false;
+            else
+                autoWriteStream << ui->seperatorEdit->text();
+
+            autoWriteStream << key << "_x" << ui->seperatorEdit->text() << key << "_y";
+        }
+
+        autoWriteStream << endl;
+    }
+    else
+    {
+        autoWriteFile->close();
+    }
+}
+
+void Plotter::savePlot()
+{
+    QString fileName = QFileDialog::getSaveFileName(
+                    this,
+                    "Save Plot to CSV",
+                    QString(),
+                    "Comma Seperated Values (*.csv);;All Files (*)"
+    );
+
+    QFile file(fileName);
+    if(!file.open(QIODevice::WriteOnly))
+    {
+        qCritical() << "Error couldn't open file for writing";
+        return;
+    }
+
+    QTextStream stream(&file);
+    stream.setRealNumberNotation( QTextStream::SmartNotation );
+
+    bool first = true;
+    foreach(QString key, plotItems.keys())
+    {
+        if(first)
+            first = false;
+        else
+            stream << ui->seperatorEdit->text();
+
+        stream << key << "_x" << ui->seperatorEdit->text() << key << "_y";
+    }
+
+    stream << endl;
+
+
+    for (int i=0; i<plotItems[plotItems.keys().first()]->getData().size(); ++i)
+    {
+        first = true;
+        foreach(QString key, plotItems.keys())
+        {
+            if(first)
+                first = false;
+            else
+                stream << ui->seperatorEdit->text();
+
+
+            if( plotItems[key]->getData().size() > i)
+            {
+                if(ui->typeComboBox->currentIndex() == Plotter::PLOT_TIME) //Auto change ms epoch to readable format
+                    stream  << QDateTime::fromMSecsSinceEpoch(plotItems[key]->getData().at(i).x()).toString("yyyy-MM-dd HH:mm:ss:z");
+                else
+                    stream << plotItems[key]->getData().at(i).x();
+                stream << ui->seperatorEdit->text() << plotItems[key]->getData().at(i).y();
+            }
+            else
+                stream << "0" << ui->seperatorEdit->text() << "0";
+        }
+
+        stream << endl;
+    }
+
+    file.close();
+}
 
 void Plotter::openColorDialog()
 {
@@ -133,6 +251,8 @@ void Plotter::startStopPlotting()
         plotMagnifier->setAxisEnabled(QwtPlot::xBottom, false);
         plotMagnifier->setAxisEnabled(QwtPlot::yLeft, false);
         plot();
+
+        startStopAutoWriting(ui->writeToFileCheckBox->isChecked());
     }
     else
     {
@@ -140,6 +260,13 @@ void Plotter::startStopPlotting()
         timer->stop();
         plotMagnifier->setAxisEnabled(QwtPlot::xBottom, true);
         plotMagnifier->setAxisEnabled(QwtPlot::yLeft, true);
+
+        if(autoWriteFile != NULL && autoWriteFile->isOpen() && ui->writeToFileCheckBox->isChecked())
+        {
+            autoWriteFile->close();
+            delete autoWriteFile;
+            autoWriteFile = NULL;
+        }
     }
 }
 
@@ -295,10 +422,8 @@ void Plotter::plot()
     //END SCALING CHECK
 
 
-
-
     foreach(QString key, plotItems.keys())
-    {
+    {               
         //QwtPlotCurve *curve = new QwtPlotCurve( graphs[key].last().name );
 
         QwtPlotCurve *curve = plotItems[key]->getCurve();
@@ -365,10 +490,10 @@ void Plotter::serialPacket(QStringList packet)
     if(!doPlotting)
         return;
 
-//    qDebug() << this->id << packet;
+    //qDebug() << this->id << packet;
 
     if(ui->typeComboBox->currentIndex() == Plotter::PLOT_TIME)
-    {        
+    {
         x = QDateTime::currentMSecsSinceEpoch();
 
         for(int i=1;i<packet.size(); i+=3)
@@ -377,10 +502,7 @@ void Plotter::serialPacket(QStringList packet)
             QRegExpValidator v(rx,this);
 
             if(!packet[i+1].contains(rx))
-            {
-                qWarning() << "Incorrect color";
                 return;
-            }
 
             QStringList color = packet[i+1].split(",");
 
@@ -397,7 +519,6 @@ void Plotter::serialPacket(QStringList packet)
                                     color[1].toInt(),
                                     color[2].toInt() )
             );
-//            qDebug() << packet[i] << packet[i+1] << packet[i+2];
 
             if(plotItem->getData().size() > buffer)
             {
@@ -406,12 +527,25 @@ void Plotter::serialPacket(QStringList packet)
             }
 
 
+            //Auto write to file the packet, if opened
+            if(autoWriteFile != NULL && autoWriteFile->isOpen() && ui->writeToFileCheckBox->isChecked())
+            {
+                if(i > 1)
+                    autoWriteStream << ui->seperatorEdit->text();
+
+                autoWriteStream << QDateTime::fromMSecsSinceEpoch(x).toString("yyyy-MM-dd HH:mm:ss:z") << ui->seperatorEdit->text() << packet[i+2].toDouble();
+            }
+
         }
+
+        if(autoWriteFile != NULL && autoWriteFile->isOpen() && ui->writeToFileCheckBox->isChecked())
+            autoWriteStream << endl;
 
     }
     else if(ui->typeComboBox->currentIndex() == Plotter::PLOT_XY)
     {
         //qDebug() << packet;
+
         for(int i=1;i<packet.size(); i+=3)
         {
             QStringList color = packet[i+1].split(",");
@@ -439,10 +573,24 @@ void Plotter::serialPacket(QStringList packet)
                                             color[1].toInt(),
                                             color[2].toInt() )
                     );
+
+                    //Auto write to file the packet, if opened
+                    if(autoWriteFile != NULL && autoWriteFile->isOpen() && ui->writeToFileCheckBox->isChecked())
+                    {
+                        if(g > 0)
+                            autoWriteStream << ui->seperatorEdit->text();
+
+                        autoWriteStream << xy[g].toDouble() << ui->seperatorEdit->text() << xy[g+1].toDouble();
+                    }
                 }
+
+                if(autoWriteFile != NULL && autoWriteFile->isOpen() && ui->writeToFileCheckBox->isChecked())
+                    autoWriteStream << endl;
 
                // qDebug() << plotItem->getData() << plotItem->getData().size();
             }
+
+
 
 //            if(plotItem->getData().size() > buffer)
 //            {
@@ -488,6 +636,8 @@ void Plotter::xmlStream(QXmlStreamWriter *writer)
     writer->writeTextElement("auto_filling", QString::number(ui->fillCheckBox->isChecked()));
     writer->writeTextElement( "background-color", currentColor.name() );
     writer->writeTextElement( "auto_fill_opacity", QString::number(ui->transparentSpinBox->value()) );
+    writer->writeTextElement( "auto_write_file", ui->writeToFileEdit->text() );
+    writer->writeTextElement( "auto_write_seperator", ui->seperatorEdit->text() );
 }
 
 void Plotter::xmlParse(QXmlStreamReader *xml)
@@ -632,6 +782,12 @@ void Plotter::xmlParse(QXmlStreamReader *xml)
                 if(xml->name() == "auto_fill_opacity")
                     ui->transparentSpinBox->setValue( xml->readElementText().toInt() );
 
+                if(xml->name() == "auto_write_file")
+                    ui->writeToFileEdit->setText(  xml->readElementText() );
+
+                if(xml->name() == "auto_write_seperator")
+                    ui->seperatorEdit->setText(  xml->readElementText() );
+
 
         /* ...and next... */
         xml->readNext();
@@ -641,5 +797,12 @@ void Plotter::xmlParse(QXmlStreamReader *xml)
 
 Plotter::~Plotter()
 {
+    if(autoWriteFile != NULL && autoWriteFile->isOpen() && ui->writeToFileCheckBox->isChecked())
+    {
+        autoWriteFile->close();
+        delete autoWriteFile;
+        autoWriteFile = NULL;
+    }
+
     delete ui;
 }

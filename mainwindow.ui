@@ -61,6 +61,7 @@
     <addaction name="actionConnect"/>
     <addaction name="actionDisconnect"/>
     <addaction name="actionSettings"/>
+    <addaction name="actionTerminal"/>
    </widget>
    <widget class="QMenu" name="menuGraph">
     <property name="title">
@@ -99,6 +100,7 @@
    <addaction name="actionOpen"/>
    <addaction name="actionSave"/>
    <addaction name="separator"/>
+   <addaction name="actionTerminal"/>
    <addaction name="actionConnect"/>
    <addaction name="actionDisconnect"/>
    <addaction name="actionSettings"/>
@@ -240,6 +242,18 @@
    </property>
    <property name="text">
     <string>Add Map</string>
+   </property>
+  </action>
+  <action name="actionTerminal">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/images/utilities-terminal.png</normaloff>:/images/utilities-terminal.png</iconset>
+   </property>
+   <property name="text">
+    <string>terminal</string>
+   </property>
+   <property name="toolTip">
+    <string>Opens Serial Terminal</string>
    </property>
   </action>
  </widget>

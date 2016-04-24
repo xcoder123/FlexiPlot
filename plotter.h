@@ -9,6 +9,8 @@
 #include <QColorDialog>
 #include <QRegExpValidator>
 
+#include <QFileDialog>
+
 #include <time.h>
 
 #include <qwt_plot.h>
@@ -82,7 +84,10 @@ public slots:
     void typeChanged(int type);
     void startStopPlotting();    
     void settingsChanged();
-    void openColorDialog();    
+    void openColorDialog();
+    void savePlot();
+    void setFileForWriting();
+    void startStopAutoWriting(bool start);
 
 private:
     Ui::Plotter *ui;
@@ -105,6 +110,9 @@ private:
     PlotPicker *plotPicker;
 
     QColor currentColor;
+
+    QFile *autoWriteFile;
+    QTextStream autoWriteStream;
 };
 
 

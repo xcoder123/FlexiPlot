@@ -18,5 +18,6 @@
         <file>images/window-duplicate.png</file>
         <file>images/04_maps.png</file>
         <file>images/graph.png</file>
+        <file>images/utilities-terminal.png</file>
     </qresource>
 </RCC>

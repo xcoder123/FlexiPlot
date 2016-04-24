@@ -4,10 +4,10 @@
 #
 #-------------------------------------------------
 
-QT       += core gui serialport printsupport webkit
+QT       += core gui serialport printsupport
 CONFIG += qwt
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets webkitwidgets
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = FlexiPlot
 TEMPLATE = app
@@ -22,9 +22,10 @@ SOURCES += main.cpp\
     plotitem.cpp \
     settings.cpp \
     config.cpp \
-    gmapwidget.cpp \
-    mapper.cpp \
-    abstractwidget.cpp
+    #gmapwidget.cpp \
+    #mapper.cpp \
+    abstractwidget.cpp \
+    terminal.cpp
 
 HEADERS  += mainwindow.h \
     qcustomplot.h \
@@ -32,14 +33,16 @@ HEADERS  += mainwindow.h \
     plotitem.h \
     settings.h \
     config.h \
-    gmapwidget.h \
-    mapper.h \
-    abstractwidget.h
+    #gmapwidget.h \
+    #mapper.h \
+    abstractwidget.h \
+    terminal.h
 
 FORMS    += mainwindow.ui \
     plotter.ui \
     settings.ui \
-    mapper.ui
+    mapper.ui \
+    terminal.ui
 
 RESOURCES += \
     icons.qrc \
