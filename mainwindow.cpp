@@ -430,9 +430,9 @@ void MainWindow::readData()
 
         //Huh strange. Qt 5.6, returns "\r{P1|PWM|255,0,0|0}\n" instead of "{P1|PWM|255,0,0|0}\r\n" as it was before
         //Hence a quick solution to the problem
-        data.remove(0, 1);
+       /* data.remove(0, 1);
         data.remove(data.length()-1, 1);
-        data.append("\r\n");
+        data.append("\r\n");*/
 
         if(terminal->isVisible())
             terminal->appendOutput( data );

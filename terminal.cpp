@@ -117,6 +117,18 @@ void Terminal::appendOutput(QString data)
 {
 //    ui->terminalBrowser->append( data );
 
+    if(ui->filterPlotPacketsCheckBox->isChecked())
+    {
+        QString tempStr( data.mid(1,data.size()-4) );
+
+        QRegExp rx_timeplot("[a-zA-Z0-9]+(\\|[a-zA-Z0-9 ]+\\|\\d{1,3},\\d{1,3},\\d{1,3}\\|(\\-*\\d+(\\.{0,1}\\d+)*|nan|inf))+");
+        QRegExp rx_xy_plot("[a-zA-Z0-9]+\\|[a-zA-Z0-9 ]+\\|\\d{1,3},\\d{1,3},\\d{1,3}\\|(\\-*\\d+\\s\\-*\\d+\\s*)+");
+        if(rx_timeplot.exactMatch(tempStr) || rx_xy_plot.exactMatch(tempStr))
+        {
+            return;
+        }
+    }
+
     QTextCursor oldCursor = ui->terminalBrowser->textCursor();
     int oldScrollValue = ui->terminalBrowser->verticalScrollBar()->value();
 

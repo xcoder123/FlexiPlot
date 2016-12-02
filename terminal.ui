@@ -44,6 +44,16 @@
       </spacer>
      </item>
      <item>
+      <widget class="QCheckBox" name="filterPlotPacketsCheckBox">
+       <property name="toolTip">
+        <string>For convinience filters out all the packets sent for plotting. Clears up terminal for easier debugging even while plotting</string>
+       </property>
+       <property name="text">
+        <string>Filter Plotting Packets</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QCheckBox" name="autoScrollCheckBox">
        <property name="text">
         <string>Auto Scroll</string>
