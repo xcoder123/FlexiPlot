@@ -4,8 +4,10 @@
 #include <QDialog>
 #include <QDebug>
 #include <QSerialPortInfo>
+#include <QSerialPort>
 #include <QSettings>
 #include <QFileDialog>
+#include <QColorDialog>
 
 namespace Ui {
 class Settings;
@@ -26,10 +28,13 @@ signals:
 private slots:
     void loadSettings();
     void saveSettings();
+    void backgroundColor();
 
 
 private:
     Ui::Settings *ui;
+
+    QColor currentBackgroundColor;
 };
 
 #endif // SETTINGS_H

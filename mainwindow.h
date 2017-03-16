@@ -45,12 +45,16 @@ private slots:
     void sendData(QByteArray data);
     void openSerialPort();
     void closeSerialPort();
+
     void addGraph();
     void addBarGraph();
     void addMap();
     void deleteGraph();
+
     void openSettings();
+
     void showAbout();
+
     void newDash();
     void normalSave();
     void saveAs();
@@ -59,6 +63,10 @@ private slots:
     void unsavedChanges(bool bb);
     void settingsChanged();
     void openTerminal();
+
+    void saveSerialSettings();
+
+    void lockStateChanged(bool checked);
 
 
 protected:
@@ -77,6 +85,9 @@ private:
     int packetsDropped;
 
     Terminal * terminal;
+
+    QComboBox * baudrateComboBox;
+    QComboBox * serialPortComboBox;
 };
 
 #endif // MAINWINDOW_H

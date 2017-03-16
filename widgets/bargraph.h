@@ -13,6 +13,8 @@
 
 #include <time.h>
 
+#include <QtCharts>
+
 #include <qwt_plot.h>
 #include <qwt_legend.h>
 #include <qwt.h>

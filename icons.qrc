@@ -20,5 +20,7 @@
         <file>images/graph.png</file>
         <file>images/utilities-terminal.png</file>
         <file>images/view-statistics.png</file>
+        <file>images/transform-move.png</file>
+        <file>images/system-lock-screen.png</file>
     </qresource>
 </RCC>

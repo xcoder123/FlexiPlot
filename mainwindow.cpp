@@ -42,7 +42,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     this->showMaximized();
 
-        settingsChanged();
+
 
     tick = 0;
     packetsDropped = 0;
@@ -51,7 +51,51 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionTerminal, SIGNAL(triggered(bool)), this, SLOT(openTerminal()));
     connect(terminal, SIGNAL(writeToSerial(QByteArray)), this, SLOT(sendData(QByteArray)));
 
+    QLabel * serialLabel = new QLabel("   Port: ", this);
+    ui->mainToolBar->insertWidget( ui->actionConnect, serialLabel );
+    serialPortComboBox = new QComboBox(this);
+    serialPortComboBox->setEditable(true);
+    QList<QSerialPortInfo> ports = QSerialPortInfo::availablePorts();
+    foreach(QSerialPortInfo port, ports)
+        serialPortComboBox->addItem(port.portName());
+    ui->mainToolBar->insertWidget( ui->actionConnect, serialPortComboBox );
+
+
+
+    QLabel * baudrateLabel = new QLabel("   Baudrate: ", this);
+    ui->mainToolBar->insertWidget( ui->actionConnect, baudrateLabel );
+    baudrateComboBox = new QComboBox(this);
+    baudrateComboBox->setEditable(true);
+    foreach(qint32 baudrate, QSerialPortInfo::standardBaudRates())
+        baudrateComboBox->addItem(QString::number( baudrate ));
+    ui->mainToolBar->insertWidget( ui->actionConnect, baudrateComboBox );
+
+
+    settingsChanged();
     readSettings();
+
+    connect(serialPortComboBox, SIGNAL(currentTextChanged(QString)), this, SLOT( saveSerialSettings()) );
+    connect(baudrateComboBox, SIGNAL(currentTextChanged(QString)), this, SLOT( saveSerialSettings()) );
+
+    connect(ui->actionLockWidgets, SIGNAL(triggered(bool)), this, SLOT(lockStateChanged(bool)));
+}
+
+void MainWindow::lockStateChanged(bool checked)
+{
+    foreach(QMdiSubWindow * w, ui->mdiArea->subWindowList())
+    {
+        if(!checked)
+            w->setWindowFlags( Qt::WindowFlags() );
+        else
+            w->setWindowFlags( Qt::FramelessWindowHint );
+    }
+}
+
+void MainWindow::saveSerialSettings()
+{
+    QSettings settings;
+    settings.setValue("Serial/port", serialPortComboBox->currentText());
+    settings.setValue( "Serial/baudrate", baudrateComboBox->currentText() );
 }
 
 void MainWindow::openTerminal()
@@ -63,10 +107,21 @@ void MainWindow::settingsChanged()
 {
     QSettings settings;
 
+    qDebug() << "Settings Changed";
+    serialPortComboBox->blockSignals(true);
+    baudrateComboBox->blockSignals(true);
+    serialPortComboBox->setCurrentText( settings.value("Serial/port").toString() );
+    baudrateComboBox->setCurrentText( QString::number( settings.value("Serial/baudrate").toInt() ) );
+    serialPortComboBox->blockSignals(false);
+    baudrateComboBox->blockSignals(false);
+
     if(settings.value("UI/tabbed").toBool())
         ui->mdiArea->setViewMode( QMdiArea::TabbedView );
     else
         ui->mdiArea->setViewMode( QMdiArea::SubWindowView );
+
+
+    ui->mdiArea->setBackground( QBrush( QColor( settings.value( "UI/backgroundColor","#a0a0a0" ).toString() ) ) );
 }
 
 void MainWindow::unsavedChanges(bool bb)
@@ -125,6 +180,8 @@ void MainWindow::openDash(QString fileName)
 
     QXmlStreamReader xml(&file);
 
+    bool isMovable = true;
+
     while(!xml.atEnd() && !xml.hasError())
     {
         /* Read next element.*/
@@ -150,6 +207,10 @@ void MainWindow::openDash(QString fileName)
 
                 plotters.append(plot);
             }
+            else if(xml.name() == "General")
+            {
+                isMovable = (bool)xml.attributes().value("isLocked").toInt();
+            }
         }
     }
 
@@ -161,6 +222,9 @@ void MainWindow::openDash(QString fileName)
     QFileInfo fileInfo(fileName);
 
     this->setWindowTitle( tr("FlexiPlot - ") + fileInfo.fileName() + "[*]" );
+
+    ui->actionLockWidgets->setChecked( isMovable );
+    lockStateChanged(isMovable);
 
 
 
@@ -245,6 +309,9 @@ void MainWindow::saveDash(QString fileName)
     xmlWriter->writeStartDocument();
     xmlWriter->writeStartElement( "Dash" );
 
+    xmlWriter->writeStartElement("General");
+        xmlWriter->writeAttribute("isLocked", QString::number(ui->actionLockWidgets->isChecked()) );
+    xmlWriter->writeEndElement();
 
     foreach(AbstractWidget* plot, plotters)
     {
@@ -387,15 +454,19 @@ void MainWindow::openSerialPort()
     if (serial->open(QIODevice::ReadWrite))
     {
         if(     serial->setBaudRate(settings.value("Serial/baudrate").toInt()) &&
-                serial->setParity( QSerialPort::NoParity ) &&
-                serial->setStopBits( QSerialPort::OneStop ) &&
-                serial->setFlowControl( QSerialPort::NoFlowControl )
+                serial->setParity( (QSerialPort::Parity) settings.value("Serial/parity").toInt() ) &&
+                serial->setStopBits( (QSerialPort::StopBits) settings.value("Serial/stop_bits").toInt() ) &&
+                serial->setFlowControl( (QSerialPort::FlowControl) settings.value("Serial/flow_control").toInt() ) &&
+                serial->setDataBits( (QSerialPort::DataBits)settings.value("Serial/data_bits").toInt() )
+
                 )
         {
             ui->statusBar->showMessage("Connected");
 
             ui->actionConnect->setEnabled( false );
             ui->actionDisconnect->setEnabled( true );
+            serialPortComboBox->setEnabled( false );
+            baudrateComboBox->setEnabled( false );
 
             foreach(AbstractWidget* plotter, plotters)
             {
@@ -428,6 +499,8 @@ void MainWindow::closeSerialPort()
 
     ui->actionConnect->setEnabled( true );
     ui->actionDisconnect->setEnabled( false );
+    serialPortComboBox->setEnabled( true );
+    baudrateComboBox->setEnabled( true );
 }
 
 void MainWindow::sendData(QByteArray data)
@@ -490,6 +563,8 @@ void MainWindow::readSettings()
     QSettings settings;
     restoreGeometry(settings.value("geometry").toByteArray());
     restoreState(settings.value("windowState").toByteArray());
+    serialPortComboBox->setCurrentText( settings.value("Serial/port").toString() );
+    baudrateComboBox->setCurrentText( settings.value("Serial/baudrate").toString() );
 }
 
 void MainWindow::closeEvent(QCloseEvent *e)
@@ -497,6 +572,8 @@ void MainWindow::closeEvent(QCloseEvent *e)
     QSettings settings;
     settings.setValue("geometry", saveGeometry());
     settings.setValue("windowState", saveState());
+    saveSerialSettings();
+
     QMainWindow::closeEvent(e);
 }
 

@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui serialport printsupport
+QT       += core gui serialport printsupport charts
 CONFIG += qwt
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
@@ -17,7 +17,6 @@ RC_FILE = flexiplot.rc
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    qcustomplot.cpp \
     plotter.cpp \
     plotitem.cpp \
     settings.cpp \
@@ -29,7 +28,6 @@ SOURCES += main.cpp\
     widgets/bargraph.cpp
 
 HEADERS  += mainwindow.h \
-    qcustomplot.h \
     plotter.h \
     plotitem.h \
     settings.h \

@@ -83,6 +83,7 @@
     </property>
     <addaction name="actionCascade"/>
     <addaction name="actionTile"/>
+    <addaction name="actionLockWidgets"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuSerial"/>
@@ -104,11 +105,13 @@
    <addaction name="actionTerminal"/>
    <addaction name="actionConnect"/>
    <addaction name="actionDisconnect"/>
-   <addaction name="actionSettings"/>
    <addaction name="separator"/>
    <addaction name="actionAdd_Graph"/>
    <addaction name="actionAdd_Bar_Graph"/>
    <addaction name="actionAdd_Map"/>
+   <addaction name="separator"/>
+   <addaction name="actionLockWidgets"/>
+   <addaction name="actionSettings"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionExit">
@@ -128,6 +131,9 @@
    <property name="text">
     <string>Connect</string>
    </property>
+   <property name="toolTip">
+    <string>Connect To Device</string>
+   </property>
    <property name="shortcut">
     <string>Ctrl+F</string>
    </property>
@@ -139,6 +145,9 @@
    </property>
    <property name="text">
     <string>Disconnect</string>
+   </property>
+   <property name="toolTip">
+    <string>Disconnect From Device</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+D</string>
@@ -265,6 +274,27 @@
    </property>
    <property name="text">
     <string>Add Bar Graph</string>
+   </property>
+  </action>
+  <action name="actionLockWidgets">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/images/system-lock-screen.png</normaloff>:/images/system-lock-screen.png</iconset>
+   </property>
+   <property name="text">
+    <string>Lock Widget Position</string>
+   </property>
+   <property name="toolTip">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Lock widgets in their current size and position&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+   <property name="statusTip">
+    <string>If checked allows graphs to be moved around. Uncheck to fix them in a position</string>
    </property>
   </action>
  </widget>
