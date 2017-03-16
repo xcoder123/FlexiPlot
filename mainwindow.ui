@@ -68,6 +68,7 @@
      <string>Graph</string>
     </property>
     <addaction name="actionAdd_Graph"/>
+    <addaction name="actionAdd_Bar_Graph"/>
     <addaction name="actionAdd_Map"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
@@ -106,6 +107,7 @@
    <addaction name="actionSettings"/>
    <addaction name="separator"/>
    <addaction name="actionAdd_Graph"/>
+   <addaction name="actionAdd_Bar_Graph"/>
    <addaction name="actionAdd_Map"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
@@ -157,7 +159,7 @@
      <normaloff>:/images/graph.png</normaloff>:/images/graph.png</iconset>
    </property>
    <property name="text">
-    <string>Add Plot</string>
+    <string>Add Line Chart</string>
    </property>
    <property name="shortcut">
     <string>Ctrl++, Ctrl+=</string>
@@ -254,6 +256,15 @@
    </property>
    <property name="toolTip">
     <string>Opens Serial Terminal</string>
+   </property>
+  </action>
+  <action name="actionAdd_Bar_Graph">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/images/view-statistics.png</normaloff>:/images/view-statistics.png</iconset>
+   </property>
+   <property name="text">
+    <string>Add Bar Graph</string>
    </property>
   </action>
  </widget>

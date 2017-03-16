@@ -19,5 +19,6 @@
         <file>images/04_maps.png</file>
         <file>images/graph.png</file>
         <file>images/utilities-terminal.png</file>
+        <file>images/view-statistics.png</file>
     </qresource>
 </RCC>

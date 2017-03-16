@@ -8,6 +8,8 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    this->setWindowTitle( this->windowTitle() + " - " + QString::fromLocal8Bit( __DATE__ ) + " " + QString::fromLocal8Bit(__TIME__));
+
     serial = new QSerialPort(this);
 
     connect(serial, SIGNAL(readyRead()), this, SLOT(readData()));
@@ -16,6 +18,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
     connect(ui->actionAdd_Graph, SIGNAL(triggered()), this, SLOT(addGraph()));
+    connect(ui->actionAdd_Bar_Graph, SIGNAL(triggered(bool)), this, SLOT(addBarGraph()));
     connect(ui->actionAdd_Map, SIGNAL(triggered()), this, SLOT(addMap()));
     connect(ui->actionSettings, SIGNAL(triggered()), this, SLOT(openSettings()));
 
@@ -47,6 +50,8 @@ MainWindow::MainWindow(QWidget *parent) :
     terminal = new Terminal(this);
     connect(ui->actionTerminal, SIGNAL(triggered(bool)), this, SLOT(openTerminal()));
     connect(terminal, SIGNAL(writeToSerial(QByteArray)), this, SLOT(sendData(QByteArray)));
+
+    readSettings();
 }
 
 void MainWindow::openTerminal()
@@ -56,8 +61,7 @@ void MainWindow::openTerminal()
 
 void MainWindow::settingsChanged()
 {
-    QSettings settings("HKEY_CURRENT_USER\\Software\\Rastro\\FlexiPlot",
-                       QSettings::NativeFormat);
+    QSettings settings;
 
     if(settings.value("UI/tabbed").toBool())
         ui->mdiArea->setViewMode( QMdiArea::TabbedView );
@@ -85,8 +89,7 @@ void MainWindow::openDashDialog()
         }
     }
 
-    QSettings settings("HKEY_CURRENT_USER\\Software\\Rastro\\FlexiPlot",
-                       QSettings::NativeFormat);
+    QSettings settings;
 
     QString path = settings.value("last_path", "./dashboards").toString();
 
@@ -167,8 +170,7 @@ void MainWindow::saveAs()
 {
     QString fileName;
 
-    QSettings settings("HKEY_CURRENT_USER\\Software\\Rastro\\FlexiPlot",
-                       QSettings::NativeFormat);
+    QSettings settings;
 
     QString path = settings.value("last_path", "./dashboards").toString();
 
@@ -194,8 +196,7 @@ void MainWindow::normalSave()
 {
     QString fileName;
 
-    QSettings settings("HKEY_CURRENT_USER\\Software\\Rastro\\FlexiPlot",
-                       QSettings::NativeFormat);
+    QSettings settings;
 
     QString path = settings.value("last_path", "./dashboards").toString();
 
@@ -330,6 +331,23 @@ void MainWindow::addGraph()
 
 }
 
+void MainWindow::addBarGraph()
+{
+
+    Config::getInstance()->setUnsavedChanges(true);
+
+    BarGraph* barGraph = new BarGraph(this);
+    barGraph->setId( QString("P%1").arg(plotters.size()) );
+    ui->mdiArea->addSubWindow(barGraph);
+
+    barGraph->show();
+
+    connect(barGraph, SIGNAL(destroyed()), this, SLOT(deleteGraph()));
+
+    plotters.append(barGraph);
+
+}
+
 void MainWindow::addMap()
 {
     /*Config::getInstance()->setUnsavedChanges(true);
@@ -363,8 +381,7 @@ void MainWindow::deleteGraph()
 
 void MainWindow::openSerialPort()
 {
-    QSettings settings("HKEY_CURRENT_USER\\Software\\Rastro\\FlexiPlot",
-                       QSettings::NativeFormat);
+    QSettings settings;
     serial->setPortName(settings.value("Serial/port").toString());
 
     if (serial->open(QIODevice::ReadWrite))
@@ -467,6 +484,22 @@ void MainWindow::readData()
             packetsDropped++;
     }
 }
+
+void MainWindow::readSettings()
+{
+    QSettings settings;
+    restoreGeometry(settings.value("geometry").toByteArray());
+    restoreState(settings.value("windowState").toByteArray());
+}
+
+void MainWindow::closeEvent(QCloseEvent *e)
+{
+    QSettings settings;
+    settings.setValue("geometry", saveGeometry());
+    settings.setValue("windowState", saveState());
+    QMainWindow::closeEvent(e);
+}
+
 
 MainWindow::~MainWindow()
 {

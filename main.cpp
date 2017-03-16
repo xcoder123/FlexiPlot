@@ -4,6 +4,11 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
+
+    QCoreApplication::setOrganizationName("Morf");
+    QCoreApplication::setOrganizationDomain("morf.lv");
+    QCoreApplication::setApplicationName("FlexiPlot");
+
     MainWindow w;
     w.show();
 

@@ -17,6 +17,8 @@
 #include "config.h"
 #include "abstractwidget.h"
 #include "terminal.h"
+
+#include "widgets/bargraph.h"
 //#include "mapper.h"
 
 namespace Ui {
@@ -33,6 +35,7 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
+    void readSettings();
 
 public slots:
     void openDash(QString fileName);
@@ -43,6 +46,7 @@ private slots:
     void openSerialPort();
     void closeSerialPort();
     void addGraph();
+    void addBarGraph();
     void addMap();
     void deleteGraph();
     void openSettings();
@@ -56,6 +60,9 @@ private slots:
     void settingsChanged();
     void openTerminal();
 
+
+protected:
+    void closeEvent(QCloseEvent * e);
 
 private:
     Ui::MainWindow *ui;

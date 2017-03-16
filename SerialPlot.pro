@@ -25,7 +25,8 @@ SOURCES += main.cpp\
     #gmapwidget.cpp \
     #mapper.cpp \
     abstractwidget.cpp \
-    terminal.cpp
+    terminal.cpp \
+    widgets/bargraph.cpp
 
 HEADERS  += mainwindow.h \
     qcustomplot.h \
@@ -36,13 +37,15 @@ HEADERS  += mainwindow.h \
     #gmapwidget.h \
     #mapper.h \
     abstractwidget.h \
-    terminal.h
+    terminal.h \
+    widgets/bargraph.h
 
 FORMS    += mainwindow.ui \
     plotter.ui \
     settings.ui \
     mapper.ui \
-    terminal.ui
+    terminal.ui \
+    widgets/bargraph.ui
 
 RESOURCES += \
     icons.qrc \

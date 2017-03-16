@@ -23,8 +23,7 @@ Settings::Settings(QWidget *parent) :
 //SAves settings in the registry
 void Settings::saveSettings()
 {
-    QSettings settings("HKEY_CURRENT_USER\\Software\\Rastro\\FlexiPlot",
-                       QSettings::NativeFormat);
+    QSettings settings;
     settings.setValue("Serial/port", ui->serialPort->currentText());
     settings.setValue( "Serial/baudrate", ui->baudrate->currentText() );
 
@@ -37,8 +36,7 @@ void Settings::saveSettings()
 //loads settings from the registry
 void Settings::loadSettings()
 {
-    QSettings settings("HKEY_CURRENT_USER\\Software\\Rastro\\FlexiPlot",
-                       QSettings::NativeFormat);
+    QSettings settings;
 
     ui->serialPort->setCurrentText( settings.value("Serial/port").toString() );
     ui->baudrate->setCurrentText( settings.value("Serial/baudrate").toString() );
