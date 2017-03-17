@@ -45,10 +45,11 @@ BarGraph::BarGraph(QWidget *parent) :
     chart->legend()->setVisible(true);
     chart->legend()->setAlignment(Qt::AlignBottom);
 
-    QChartView *chartView = new QChartView(chart);
-    chartView->setRenderHint(QPainter::Antialiasing);
+//    QChartView *chartView = new QChartView(chart);
+    ui->chartView->setChart( chart );
+    ui->chartView->setRenderHint(QPainter::Antialiasing);
 
-    this->layout()->addWidget( chartView );
+//    this->layout()->addWidget( chartView );
 
     this->setWindowTitle("Bar Graph 1");
 }
@@ -65,7 +66,38 @@ void BarGraph::xmlStream(QXmlStreamWriter *writer)
 
 void BarGraph::xmlParse(QXmlStreamReader *xml)
 {
+    /* Let's check that we're really getting a person. */
+    if(xml->tokenType() != QXmlStreamReader::StartElement &&
+            xml->name() == "Widget") {
+        return;
+    }
 
+    /* Next element... */
+    xml->readNext();
+
+    while(!(xml->tokenType() == QXmlStreamReader::EndElement && xml->name() == "Widget"))
+    {
+        if(xml->name() == "WindowGeometry")
+        {
+            QXmlStreamAttributes attributes = xml->attributes();
+
+            if(attributes.hasAttribute("x") && attributes.hasAttribute("y")
+                    && attributes.hasAttribute("width") && attributes.hasAttribute("height"))
+            {
+                this->parentWidget()->setGeometry(
+                                    attributes.value("x").toInt(),
+                                    attributes.value("y").toInt(),
+                                    attributes.value("width").toInt(),
+                                    attributes.value("height").toInt()
+                                );
+            }
+
+        }
+
+
+        /* ...and next... */
+        xml->readNext();
+    }
 }
 
 void BarGraph::reset()

@@ -12,12 +12,12 @@
 
 #include <QDebug>
 
-#include "plotter.h"
 #include "settings.h"
 #include "config.h"
-#include "abstractwidget.h"
 #include "terminal.h"
 
+#include "widgets/abstractwidget.h"
+#include "widgets/linegraph.h"
 #include "widgets/bargraph.h"
 //#include "mapper.h"
 
@@ -43,13 +43,16 @@ public slots:
 private slots:
     void readData();
     void sendData(QByteArray data);
+
+    void parseData(QByteArray data);
+
     void openSerialPort();
     void closeSerialPort();
 
-    void addGraph();
+    void addLineGraph();
     void addBarGraph();
     void addMap();
-    void deleteGraph();
+    void deleteWidget();
 
     void openSettings();
 
@@ -79,7 +82,7 @@ private:
 
     QByteArray allData;
 
-    QList<AbstractWidget*> plotters;
+    QList<AbstractWidget*> widgets;
 
     int tick;
     int packetsDropped;

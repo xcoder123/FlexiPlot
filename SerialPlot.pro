@@ -17,33 +17,33 @@ RC_FILE = flexiplot.rc
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    plotter.cpp \
-    plotitem.cpp \
+    widgets/plotitem.cpp \
     settings.cpp \
     config.cpp \
     #gmapwidget.cpp \
     #mapper.cpp \
-    abstractwidget.cpp \
+    widgets/abstractwidget.cpp \
     terminal.cpp \
-    widgets/bargraph.cpp
+    widgets/bargraph.cpp \
+    widgets/linegraph.cpp
 
 HEADERS  += mainwindow.h \
-    plotter.h \
-    plotitem.h \
+    widgets/plotitem.h \
     settings.h \
     config.h \
     #gmapwidget.h \
     #mapper.h \
-    abstractwidget.h \
+    widgets/abstractwidget.h \
     terminal.h \
-    widgets/bargraph.h
+    widgets/bargraph.h \
+    widgets/linegraph.h
 
 FORMS    += mainwindow.ui \
-    plotter.ui \
     settings.ui \
-    mapper.ui \
+    widgets/mapper.ui \
     terminal.ui \
-    widgets/bargraph.ui
+    widgets/bargraph.ui \
+    widgets/linegraph.ui
 
 RESOURCES += \
     icons.qrc \

@@ -17,7 +17,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionDisconnect, SIGNAL(triggered()), this, SLOT(closeSerialPort()));
 
 
-    connect(ui->actionAdd_Graph, SIGNAL(triggered()), this, SLOT(addGraph()));
+    connect(ui->actionAdd_Graph, SIGNAL(triggered()), this, SLOT(addLineGraph()));
     connect(ui->actionAdd_Bar_Graph, SIGNAL(triggered(bool)), this, SLOT(addBarGraph()));
     connect(ui->actionAdd_Map, SIGNAL(triggered()), this, SLOT(addMap()));
     connect(ui->actionSettings, SIGNAL(triggered()), this, SLOT(openSettings()));
@@ -164,7 +164,7 @@ void MainWindow::openDash(QString fileName)
 
     this->closeSerialPort();
 
-    foreach(AbstractWidget* plot, plotters)
+    foreach(AbstractWidget* plot, widgets)
     {
         plot->parentWidget()->close();
     }
@@ -194,18 +194,30 @@ void MainWindow::openDash(QString fileName)
 
         if(token == QXmlStreamReader::StartElement)
         {
-            if(xml.name() == "Plotter")
+            if(xml.name() == "Widget")
             {
-                Plotter* plot = new Plotter(this);
-                ui->mdiArea->addSubWindow(plot);
+                AbstractWidget* widget;
+                if( xml.attributes().value("type").toInt() == LineGraph::Type)
+                {
+                    widget = new LineGraph(this);
+                }
+                else if(xml.attributes().value("type").toInt() == BarGraph::Type)
+                {
+                    widget = new BarGraph(this);
+                }
+                else
+                {
+                    QMessageBox::critical(this, "Error", "Unknown widget type. Dash file might be of old version or corrupted");
+                    return;
+                }
 
-                plot->xmlParse(&xml);
+                ui->mdiArea->addSubWindow(widget);
+                widget->xmlParse(&xml);
+                widget->show();
 
-                plot->show();
+                connect(widget, SIGNAL(destroyed()), this, SLOT(deleteWidget()));
 
-                connect(plot, SIGNAL(destroyed()), this, SLOT(deleteGraph()));
-
-                plotters.append(plot);
+                widgets.append(widget);
             }
             else if(xml.name() == "General")
             {
@@ -313,10 +325,10 @@ void MainWindow::saveDash(QString fileName)
         xmlWriter->writeAttribute("isLocked", QString::number(ui->actionLockWidgets->isChecked()) );
     xmlWriter->writeEndElement();
 
-    foreach(AbstractWidget* plot, plotters)
+    foreach(AbstractWidget* plot, widgets)
     {
-        xmlWriter->writeStartElement("Plotter");
-
+        xmlWriter->writeStartElement("Widget");
+            xmlWriter->writeAttribute("type", QString::number(plot->type()) );
             xmlWriter->writeStartElement("WindowGeometry");
                 xmlWriter->writeAttribute( "x", QString::number(plot->parentWidget()->geometry().x()));
                 xmlWriter->writeAttribute( "y", QString::number(plot->parentWidget()->geometry().y()));
@@ -356,7 +368,7 @@ void MainWindow::newDash()
 
     this->closeSerialPort();
 
-    foreach(AbstractWidget* plot, plotters)
+    foreach(AbstractWidget* plot, widgets)
     {
         plot->parentWidget()->close();
     }
@@ -381,20 +393,20 @@ void MainWindow::openSettings()
     settings->exec();
 }
 
-void MainWindow::addGraph()
+void MainWindow::addLineGraph()
 {
 
     Config::getInstance()->setUnsavedChanges(true);
 
-    Plotter* plot = new Plotter(this);
-    plot->setId( QString("P%1").arg(plotters.size()) );
+    LineGraph* plot = new LineGraph(this);
+    plot->setId( QString("P%1").arg(widgets.size()) );
     ui->mdiArea->addSubWindow(plot);
 
     plot->show();
 
-    connect(plot, SIGNAL(destroyed()), this, SLOT(deleteGraph()));
+    connect(plot, SIGNAL(destroyed()), this, SLOT(deleteWidget()));
 
-    plotters.append(plot);
+    widgets.append(plot);
 
 }
 
@@ -404,14 +416,14 @@ void MainWindow::addBarGraph()
     Config::getInstance()->setUnsavedChanges(true);
 
     BarGraph* barGraph = new BarGraph(this);
-    barGraph->setId( QString("P%1").arg(plotters.size()) );
+    barGraph->setId( QString("P%1").arg(widgets.size()) );
     ui->mdiArea->addSubWindow(barGraph);
 
     barGraph->show();
 
-    connect(barGraph, SIGNAL(destroyed()), this, SLOT(deleteGraph()));
+    connect(barGraph, SIGNAL(destroyed()), this, SLOT(deleteWidget()));
 
-    plotters.append(barGraph);
+    widgets.append(barGraph);
 
 }
 
@@ -430,15 +442,15 @@ void MainWindow::addMap()
     plotters.append(map);*/
 }
 
-void MainWindow::deleteGraph()
+void MainWindow::deleteWidget()
 {
     //qDebug() << QObject::sender();
-    for(int i=0; i<plotters.size(); i++)
+    for(int i=0; i<widgets.size(); i++)
     {
 
-        if(QObject::sender() == plotters[i])
+        if(QObject::sender() == widgets[i])
         {
-            plotters.removeAt(i);
+            widgets.removeAt(i);
             //delete plotter;
             break;
         }
@@ -468,7 +480,7 @@ void MainWindow::openSerialPort()
             serialPortComboBox->setEnabled( false );
             baudrateComboBox->setEnabled( false );
 
-            foreach(AbstractWidget* plotter, plotters)
+            foreach(AbstractWidget* plotter, widgets)
             {
                 plotter->reset();
             }
@@ -517,45 +529,50 @@ void MainWindow::readData()
     {
 
         QByteArray data = serial->readLine();        
-
-        //Huh strange. Qt 5.6, returns "\r{P1|PWM|255,0,0|0}\n" instead of "{P1|PWM|255,0,0|0}\r\n" as it was before
-        //Hence a quick solution to the problem
-       /* data.remove(0, 1);
-        data.remove(data.length()-1, 1);
-        data.append("\r\n");*/
-
-        if(terminal->isVisible())
-            terminal->appendOutput( data );
-
-        if(data.at(0) == '{' && data.at(data.size()-3) == '}')
-        {
-
-            QString tempStr( data.mid(1,data.size()-4) );
-
-            //verify that it is a valid packet!
-            QRegExp rx_timeplot("[a-zA-Z0-9]+(\\|[a-zA-Z0-9 ]+\\|\\d{1,3},\\d{1,3},\\d{1,3}\\|\\-*\\d+(\\.{0,1}\\d+)*)+");
-            QRegExp rx_xy_plot("[a-zA-Z0-9]+\\|[a-zA-Z0-9 ]+\\|\\d{1,3},\\d{1,3},\\d{1,3}\\|(\\-*\\d+\\s\\-*\\d+\\s*)+");
-            if(!rx_timeplot.exactMatch(tempStr) && !rx_xy_plot.exactMatch(tempStr))
-            {
-                qDebug() << "Packets dropped: " << packetsDropped;
-                packetsDropped++;
-                break;
-            }
-
-            QStringList cmd = tempStr.split("|");
-
-            //qDebug() << cmd;
-
-            foreach(AbstractWidget* plot, plotters)
-            {
-                if(plot->getId() == cmd[0])
-                    plot->serialPacket( cmd );
-            }
-
-        }
-        else
-            packetsDropped++;
+        parseData(data);
     }
+}
+
+void MainWindow::parseData(QByteArray data)
+{
+    //Huh strange. Qt 5.6, returns "\r{P1|PWM|255,0,0|0}\n" instead of "{P1|PWM|255,0,0|0}\r\n" as it was before
+    //Hence a quick solution to the problem
+   /* data.remove(0, 1);
+    data.remove(data.length()-1, 1);
+    data.append("\r\n");*/
+
+    if(terminal->isVisible())
+        terminal->appendOutput( data );
+
+    if(data.at(0) == '{' && data.at(data.size()-3) == '}')
+    {
+
+        QString tempStr( data.mid(1,data.size()-4) );
+
+        //verify that it is a valid packet!
+//        QRegExp rx_timeplot("[a-zA-Z0-9]+(\\|[a-zA-Z0-9 ]+\\|\\d{1,3},\\d{1,3},\\d{1,3}\\|\\-*\\d+(\\.{0,1}\\d+)*)+");
+//        QRegExp rx_xy_plot("[a-zA-Z0-9]+\\|[a-zA-Z0-9 ]+\\|\\d{1,3},\\d{1,3},\\d{1,3}\\|(\\-*\\d+\\s\\-*\\d+\\s*)+");
+        if(!LineGraph::validPacket(tempStr))
+        {
+            qDebug() << "Packets dropped: " << packetsDropped;
+            packetsDropped++;
+            return;
+//            break;
+        }
+
+        QStringList cmd = tempStr.split("|");
+
+        //qDebug() << cmd;
+
+        foreach(AbstractWidget* plot, widgets)
+        {
+            if(plot->getId() == cmd[0])
+                plot->serialPacket( cmd );
+        }
+
+    }
+    else
+        packetsDropped++;
 }
 
 void MainWindow::readSettings()

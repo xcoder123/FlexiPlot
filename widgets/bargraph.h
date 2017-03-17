@@ -1,6 +1,17 @@
 #ifndef BARGRAPH_H
 #define BARGRAPH_H
 
+/*!
+ *  Packets:
+ *  {P0|Column 1;Column 2;Column 3|Set Name 1|255,0,0|val_col1 val_col2 val_col3|Set Name 2|255,0,0|val_col1 val_col2 val_col3}
+ *      Example: {P0|Jan;Feb;Mar|Jane|255,0,0|25 15 17|John|255,0,0|8 9 23}
+ *
+ *
+ *  Colors should be optional, if no color is specified for set, let QtCharts handle it.
+ *  {P0|Column 1;Column 2;Column 3|Set Name|val1 val2 val3 val4}
+ *
+ */
+
 #include <QWidget>
 #include <QTime>
 #include <QTimer>
@@ -14,23 +25,7 @@
 #include <time.h>
 
 #include <QtCharts>
-
-#include <qwt_plot.h>
-#include <qwt_legend.h>
-#include <qwt.h>
-#include <qwt_plot_curve.h>
-#include <qwt_plot_grid.h>
-#include <qwt_date_scale_draw.h>
-#include <qwt_date_scale_engine.h>
-#include <qwt_text.h>
-#include <qwt_scale_widget.h>
-#include <qwt_legend_label.h>
-#include <qwt_scale_widget.h>
-#include <qwt_plot_magnifier.h>
-#include <qwt_plot_panner.h>
-#include <qwt_plot_canvas.h>
-#include <qwt_plot_picker.h>
-#include <qwt_picker_machine.h>
+#include <QtCharts/QChartView>
 
 
 #include "plotitem.h"
@@ -46,6 +41,13 @@ class BarGraph : public AbstractWidget
     Q_OBJECT
 
 public:
+    enum { Type = 2 };
+    int type() const
+    {
+        // Enable the use of qgraphicsitem_cast with this item.
+        return Type;
+    }
+
     explicit BarGraph(QWidget *parent = 0);
     ~BarGraph();
 
