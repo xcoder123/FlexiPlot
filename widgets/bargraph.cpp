@@ -54,6 +54,14 @@ BarGraph::BarGraph(QWidget *parent) :
     this->setWindowTitle("Bar Graph 1");
 }
 
+bool BarGraph::validPacket(QString packet)
+{
+    QRegExp rx_timeplot("[a-zA-Z0-9]+(\\|[a-zA-Z0-9 ]+\\|\\d{1,3},\\d{1,3},\\d{1,3}\\|\\-*\\d+(\\.{0,1}\\d+)*)+");
+    QRegExp rx_xy_plot("[a-zA-Z0-9]+\\|[a-zA-Z0-9 ]+\\|\\d{1,3},\\d{1,3},\\d{1,3}\\|(\\-*\\d+\\s\\-*\\d+\\s*)+");
+
+    return rx_timeplot.exactMatch(packet) || rx_xy_plot.exactMatch(packet);
+}
+
 void BarGraph::serialPacket(QStringList packet)
 {
 

@@ -25,7 +25,9 @@ SOURCES += main.cpp\
     widgets/abstractwidget.cpp \
     terminal.cpp \
     widgets/bargraph.cpp \
-    widgets/linegraph.cpp
+    widgets/linegraph.cpp \
+    debugtools.cpp \
+    widgets/helper.cpp
 
 HEADERS  += mainwindow.h \
     widgets/plotitem.h \
@@ -36,14 +38,17 @@ HEADERS  += mainwindow.h \
     widgets/abstractwidget.h \
     terminal.h \
     widgets/bargraph.h \
-    widgets/linegraph.h
+    widgets/linegraph.h \
+    debugtools.h \
+    widgets/helper.h
 
 FORMS    += mainwindow.ui \
     settings.ui \
     widgets/mapper.ui \
     terminal.ui \
     widgets/bargraph.ui \
-    widgets/linegraph.ui
+    widgets/linegraph.ui \
+    debugtools.ui
 
 RESOURCES += \
     icons.qrc \

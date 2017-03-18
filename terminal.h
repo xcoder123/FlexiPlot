@@ -11,6 +11,10 @@
 
 #include <QDateTime>
 
+#include <QSettings>
+
+#include "widgets/helper.h"
+
 namespace Ui {
 class Terminal;
 }
@@ -27,6 +31,10 @@ public:
 
     void appendOutput(QByteArray data);
     void appendOutput(QString data);
+
+private:
+    void saveHistory();
+    void loadHistory();
 
 private slots:
     void sendInput();

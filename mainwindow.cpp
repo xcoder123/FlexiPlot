@@ -48,7 +48,7 @@ MainWindow::MainWindow(QWidget *parent) :
     packetsDropped = 0;
 
     terminal = new Terminal(this);
-    connect(ui->actionTerminal, SIGNAL(triggered(bool)), this, SLOT(openTerminal()));
+    connect(ui->actionTerminal, SIGNAL(triggered(bool)), terminal, SLOT(show()));
     connect(terminal, SIGNAL(writeToSerial(QByteArray)), this, SLOT(sendData(QByteArray)));
 
     QLabel * serialLabel = new QLabel("   Port: ", this);
@@ -78,7 +78,13 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(baudrateComboBox, SIGNAL(currentTextChanged(QString)), this, SLOT( saveSerialSettings()) );
 
     connect(ui->actionLockWidgets, SIGNAL(triggered(bool)), this, SLOT(lockStateChanged(bool)));
+
+    debugToolsDialog = new DebugTools(this);
+    connect(ui->actionDebug_Tools, SIGNAL(triggered(bool)), debugToolsDialog, SLOT(show()));
+    connect(debugToolsDialog, SIGNAL(packetSent(QByteArray)), this, SLOT(parseData(QByteArray)));
 }
+
+
 
 void MainWindow::lockStateChanged(bool checked)
 {
@@ -552,7 +558,8 @@ void MainWindow::parseData(QByteArray data)
         //verify that it is a valid packet!
 //        QRegExp rx_timeplot("[a-zA-Z0-9]+(\\|[a-zA-Z0-9 ]+\\|\\d{1,3},\\d{1,3},\\d{1,3}\\|\\-*\\d+(\\.{0,1}\\d+)*)+");
 //        QRegExp rx_xy_plot("[a-zA-Z0-9]+\\|[a-zA-Z0-9 ]+\\|\\d{1,3},\\d{1,3},\\d{1,3}\\|(\\-*\\d+\\s\\-*\\d+\\s*)+");
-        if(!LineGraph::validPacket(tempStr))
+//        if(!LineGraph::validPacket(tempStr))
+        if(!Helper::validPacket(tempStr))
         {
             qDebug() << "Packets dropped: " << packetsDropped;
             packetsDropped++;

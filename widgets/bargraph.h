@@ -58,6 +58,8 @@ public:
     void xmlStream(QXmlStreamWriter *writer);
     void xmlParse(QXmlStreamReader* xml);
 
+    static bool validPacket(QString packet);
+
 public slots:
     void setId(QString str);
 

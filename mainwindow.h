@@ -15,6 +15,8 @@
 #include "settings.h"
 #include "config.h"
 #include "terminal.h"
+#include "widgets/helper.h"
+#include "debugtools.h"
 
 #include "widgets/abstractwidget.h"
 #include "widgets/linegraph.h"
@@ -65,7 +67,8 @@ private slots:
     void openDashDialog();
     void unsavedChanges(bool bb);
     void settingsChanged();
-    void openTerminal();
+
+    void openTerminal();    
 
     void saveSerialSettings();
 
@@ -88,6 +91,7 @@ private:
     int packetsDropped;
 
     Terminal * terminal;
+    DebugTools * debugToolsDialog;
 
     QComboBox * baudrateComboBox;
     QComboBox * serialPortComboBox;

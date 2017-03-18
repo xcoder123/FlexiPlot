@@ -16,6 +16,26 @@ Terminal::Terminal(QWidget *parent) :
     ui->cmdEdit->installEventFilter( this );
 
     connect(ui->clearBtn, SIGNAL(clicked(bool)), this, SLOT(clear()));
+
+    loadHistory();
+}
+
+void Terminal::saveHistory()
+{
+    QStringList itemListStrList;
+    for(int i=0; i<ui->sentCmdList->count(); i++)
+        itemListStrList << ui->sentCmdList->item(i)->text();
+
+    QSettings settings;
+    settings.setValue("terminal/history", itemListStrList );
+}
+
+void Terminal::loadHistory()
+{
+    QSettings settings;
+    QStringList savedHistoryList = settings.value("terminal/history", QStringList()).toStringList();
+    foreach(QString str, savedHistoryList )
+        ui->sentCmdList->addItem( str );
 }
 
 void Terminal::clear()
@@ -23,6 +43,9 @@ void Terminal::clear()
     ui->cmdEdit->clear();
     ui->sentCmdList->clear();
     ui->terminalBrowser->clear();
+
+    QSettings settings;
+    settings.setValue("terminal/history", QStringList() );
 }
 
 bool Terminal::eventFilter(QObject *obj, QEvent *e)
@@ -101,6 +124,8 @@ void Terminal::sendInput()
     ui->sentCmdList->scrollToBottom();
 
     ui->cmdEdit->clear();
+
+    saveHistory();
 }
 
 Terminal::~Terminal()
@@ -121,9 +146,9 @@ void Terminal::appendOutput(QString data)
     {
         QString tempStr( data.mid(1,data.size()-4) );
 
-        QRegExp rx_timeplot("[a-zA-Z0-9]+(\\|[a-zA-Z0-9 ]+\\|\\d{1,3},\\d{1,3},\\d{1,3}\\|(\\-*\\d+(\\.{0,1}\\d+)*|nan|inf))+");
-        QRegExp rx_xy_plot("[a-zA-Z0-9]+\\|[a-zA-Z0-9 ]+\\|\\d{1,3},\\d{1,3},\\d{1,3}\\|(\\-*\\d+\\s\\-*\\d+\\s*)+");
-        if(rx_timeplot.exactMatch(tempStr) || rx_xy_plot.exactMatch(tempStr))
+//        QRegExp rx_timeplot("[a-zA-Z0-9]+(\\|[a-zA-Z0-9 ]+\\|\\d{1,3},\\d{1,3},\\d{1,3}\\|(\\-*\\d+(\\.{0,1}\\d+)*|nan|inf))+");
+//        QRegExp rx_xy_plot("[a-zA-Z0-9]+\\|[a-zA-Z0-9 ]+\\|\\d{1,3},\\d{1,3},\\d{1,3}\\|(\\-*\\d+\\s\\-*\\d+\\s*)+");
+        if( Helper::validPacket(tempStr) )
         {
             return;
         }

@@ -18,6 +18,7 @@ public:
     virtual void xmlStream(QXmlStreamWriter *writer) = 0;
     virtual void xmlParse(QXmlStreamReader* xml) = 0;
 
+
 public slots:
     virtual void setId(QString str) = 0;
 

@@ -4,3 +4,5 @@ AbstractWidget::AbstractWidget(QWidget *parent)
     :QWidget(parent)
 {
 }
+
+
