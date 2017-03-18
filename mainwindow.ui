@@ -69,7 +69,6 @@
     </property>
     <addaction name="actionAdd_Graph"/>
     <addaction name="actionAdd_Bar_Graph"/>
-    <addaction name="actionAdd_Map"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -115,7 +114,6 @@
    <addaction name="separator"/>
    <addaction name="actionAdd_Graph"/>
    <addaction name="actionAdd_Bar_Graph"/>
-   <addaction name="actionAdd_Map"/>
    <addaction name="separator"/>
    <addaction name="actionLockWidgets"/>
    <addaction name="actionSettings"/>

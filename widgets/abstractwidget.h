@@ -7,7 +7,7 @@
 
 class AbstractWidget : public QWidget
 {
-public:    
+public:
     AbstractWidget(QWidget *parent);
     virtual void reset() = 0;
     virtual void serialPacket(QStringList packet) = 0;

@@ -406,7 +406,8 @@ void MainWindow::addLineGraph()
 
     LineGraph* plot = new LineGraph(this);
     plot->setId( QString("P%1").arg(widgets.size()) );
-    ui->mdiArea->addSubWindow(plot);
+    QMdiSubWindow *subWindow = ui->mdiArea->addSubWindow(plot);
+    subWindow->setWindowIcon( QIcon("://images/graph.png") );
 
     plot->show();
 
@@ -423,7 +424,8 @@ void MainWindow::addBarGraph()
 
     BarGraph* barGraph = new BarGraph(this);
     barGraph->setId( QString("P%1").arg(widgets.size()) );
-    ui->mdiArea->addSubWindow(barGraph);
+    QMdiSubWindow *subWindow = ui->mdiArea->addSubWindow(barGraph);
+    subWindow->setWindowIcon( QIcon("://images/view-statistics.png") );
 
     barGraph->show();
 
@@ -555,21 +557,23 @@ void MainWindow::parseData(QByteArray data)
 
         QString tempStr( data.mid(1,data.size()-4) );
 
+//        qDebug() << tempStr;
+
         //verify that it is a valid packet!
 //        QRegExp rx_timeplot("[a-zA-Z0-9]+(\\|[a-zA-Z0-9 ]+\\|\\d{1,3},\\d{1,3},\\d{1,3}\\|\\-*\\d+(\\.{0,1}\\d+)*)+");
 //        QRegExp rx_xy_plot("[a-zA-Z0-9]+\\|[a-zA-Z0-9 ]+\\|\\d{1,3},\\d{1,3},\\d{1,3}\\|(\\-*\\d+\\s\\-*\\d+\\s*)+");
 //        if(!LineGraph::validPacket(tempStr))
         if(!Helper::validPacket(tempStr))
         {
-            qDebug() << "Packets dropped: " << packetsDropped;
             packetsDropped++;
+            qDebug() << "Packets dropped: " << packetsDropped;
             return;
 //            break;
         }
 
         QStringList cmd = tempStr.split("|");
 
-        //qDebug() << cmd;
+//        qDebug() << cmd;
 
         foreach(AbstractWidget* plot, widgets)
         {

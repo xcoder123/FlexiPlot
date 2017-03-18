@@ -36,6 +36,13 @@ namespace Ui {
 class BarGraph;
 }
 
+struct bar_graph_plot_item_t {
+    QList<qreal> values;
+    QString set_name;
+    QColor color;
+    bool colorIsSet;
+};
+
 class BarGraph : public AbstractWidget
 {
     Q_OBJECT
@@ -47,6 +54,9 @@ public:
         // Enable the use of qgraphicsitem_cast with this item.
         return Type;
     }
+
+    enum BarChartType {TYPE_NORMAL, TYPE_STACKED, TYPE_PERCENT, TYPE_HORIZONTAL, TYPE_HORIZONTAL_STACKED, TYPE_HORIZONTAL_PERCENT };
+    enum LegendPosition {POS_TOP, POS_RIGHT, POS_BOTTOM, POS_LEFT, POS_DETACHED };
 
     explicit BarGraph(QWidget *parent = 0);
     ~BarGraph();
@@ -60,13 +70,28 @@ public:
 
     static bool validPacket(QString packet);
 
+private:
+    void updateDetachedLegendLayout();
+    void blockAllSignals(bool block);
+
 public slots:
     void setId(QString str);
+    void setTitle(QString str);
+    void settingsChanged();
+
+    void plot();
 
 
 private:
     Ui::BarGraph *ui;
     QString id;
+
+    QChart *chart;
+
+    QList<bar_graph_plot_item_t> items;
+    QStringList categories;
+
+    bool readyToPlot;
 };
 
 #endif // BARGRAPH_H
