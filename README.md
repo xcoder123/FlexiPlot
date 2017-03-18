@@ -21,4 +21,7 @@ And you can repeat this pattern as much as you like.
 
 It also supports XY plane plotting. For more details in settings tab hover over properties and you will see examples of packets.
 
+
+# Screenshot
+![image](https://cloud.githubusercontent.com/assets/7244389/24076638/d2f9edaa-0c2d-11e7-811f-6b93956c5f48.png)
 ![image](https://cloud.githubusercontent.com/assets/7244389/6420839/bc6029c6-bec1-11e4-81fd-333fa1047a5d.png)
