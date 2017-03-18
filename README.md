@@ -25,8 +25,11 @@ Note a packet consists of
 
 And you can repeat this pattern as much as you like.
 
-It also supports XY plane plotting. For more details in settings tab hover over properties and you will see examples of packets.
+It also supports XY plane plotting. A sample packet for plotting quadratic:
 
+```
+{P3|Quadratic|255,0,0|-5 25 -4 16 -3 9 -2 4 -1 1 0 0 1 1 2 4 3 9 4 16 5 25}
+```
 
 ### Bar Graphs
 
@@ -51,4 +54,5 @@ If you want to use custom set of colors, you can just specify them in the packet
 
 # Screenshots
 ![image](https://cloud.githubusercontent.com/assets/7244389/24076638/d2f9edaa-0c2d-11e7-811f-6b93956c5f48.png)
+![image](https://cloud.githubusercontent.com/assets/7244389/24076772/1805ef0e-0c31-11e7-9859-1a62b90e2288.png)
 ![image](https://cloud.githubusercontent.com/assets/7244389/6420839/bc6029c6-bec1-11e4-81fd-333fa1047a5d.png)
