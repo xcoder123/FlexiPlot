@@ -15,7 +15,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="../icons.qrc">
-    <normaloff>:/images/graph.png</normaloff>:/images/graph.png</iconset>
+    <normaloff>:/images/linechart.ico</normaloff>:/images/linechart.ico</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="spacing">
@@ -121,8 +121,8 @@
           <property name="geometry">
            <rect>
             <x>0</x>
-            <y>-125</y>
-            <width>369</width>
+            <y>0</y>
+            <width>230</width>
             <height>678</height>
            </rect>
           </property>

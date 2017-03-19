@@ -1,14 +1,15 @@
-#ifndef BARGRAPH_H
-#define BARGRAPH_H
+#ifndef PIECHART_H
+#define PIECHART_H
 
 /*!
  *  Packets:
- *  {P0|Column 1;Column 2;Column 3|Set Name 1|255,0,0|val_col1 val_col2 val_col3|Set Name 2|255,0,0|val_col1 val_col2 val_col3}
- *      Example: {P0|Jan;Feb;Mar|Jane|255,0,0|25 15 17|John|255,0,0|8 9 23}
+ *  {P0|Slice 1|255,0,0|value1|Slice 2|0,255,0|value2|Slice 3|0,0,255|value3}
+ *      Example: {P0|Slice 1|255,0,0|10|Slice 2|0,255,0|30|Slice 3|0,0,255|20}
  *
  *
  *  Colors should be optional, if no color is specified for set, let QtCharts handle it.
- *  {P0|Column 1;Column 2;Column 3|Set Name|val1 val2 val3 val4}
+ *  {P0|Slice 1|value1|Slice 2|value2|Slice 3|value3}
+ *      Example: {P0|Slice 1|10|Slice 2|30|Slice 3|20}
  *
  */
 
@@ -19,6 +20,7 @@
 #include <QMoveEvent>
 #include <QColorDialog>
 #include <QRegExpValidator>
+#include <QDebug>
 
 #include <QFileDialog>
 
@@ -31,37 +33,39 @@
 #include <QtCharts/QValueAxis>
 
 
+#include "flexipieslice.h"
+
 #include "plotitem.h"
 #include "config.h"
 #include "abstractwidget.h"
 
 namespace Ui {
-class BarGraph;
+class PieChart;
 }
 
-struct bar_graph_plot_item_t {
-    QList<qreal> values;
-    QString set_name;
+struct pie_chart_plot_item_t {
+    qreal value;
+    QString name;
     QColor color;
     bool colorIsSet;
 };
 
-class BarGraph : public AbstractWidget
+class PieChart : public AbstractWidget
 {
     Q_OBJECT
 
 public:
-    enum { Type = 2 };
+    enum {Type = 3 };
+
     int type() const
     {
         return Type;
     }
 
-    enum BarChartType {TYPE_NORMAL, TYPE_STACKED, TYPE_PERCENT, TYPE_HORIZONTAL, TYPE_HORIZONTAL_STACKED, TYPE_HORIZONTAL_PERCENT };
     enum LegendPosition {POS_TOP, POS_RIGHT, POS_BOTTOM, POS_LEFT, POS_DETACHED };
 
-    explicit BarGraph(QWidget *parent = 0);
-    ~BarGraph();
+    explicit PieChart(QWidget *parent = 0);
+    ~PieChart();
 
     void serialPacket(QStringList packet);
     QString getId() { return id; }
@@ -72,12 +76,6 @@ public:
 
     static bool validPacket(QString packet);
 
-private:
-    void updateDetachedLegendLayout();
-    void blockAllSignals(bool block);
-
-private slots:
-    void legendMarkerClicked();
 
 public slots:
     void setId(QString str);
@@ -86,17 +84,17 @@ public slots:
 
     void plot();
 
+private:
+    void updateDetachedLegendLayout();
+    void blockAllSignals(bool block);
 
 private:
-    Ui::BarGraph *ui;
+    Ui::PieChart *ui;
     QString id;
 
+    QList<pie_chart_plot_item_t> items;
+
     QChart *chart;
-
-    QList<bar_graph_plot_item_t> items;
-    QStringList categories;
-
-    bool readyToPlot;
 };
 
-#endif // BARGRAPH_H
+#endif // PIECHART_H

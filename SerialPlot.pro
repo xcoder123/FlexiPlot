@@ -27,7 +27,10 @@ SOURCES += main.cpp\
     widgets/bargraph.cpp \
     widgets/linegraph.cpp \
     debugtools.cpp \
-    widgets/helper.cpp
+    widgets/helper.cpp \
+    widgets/piechart.cpp \
+    widgets/flexipieslice.cpp \
+    aboutdialog.cpp
 
 HEADERS  += mainwindow.h \
     widgets/plotitem.h \
@@ -40,7 +43,10 @@ HEADERS  += mainwindow.h \
     widgets/bargraph.h \
     widgets/linegraph.h \
     debugtools.h \
-    widgets/helper.h
+    widgets/helper.h \
+    widgets/piechart.h \
+    widgets/flexipieslice.h \
+    aboutdialog.h
 
 FORMS    += mainwindow.ui \
     settings.ui \
@@ -48,7 +54,9 @@ FORMS    += mainwindow.ui \
     terminal.ui \
     widgets/bargraph.ui \
     widgets/linegraph.ui \
-    debugtools.ui
+    debugtools.ui \
+    widgets/piechart.ui \
+    aboutdialog.ui
 
 RESOURCES += \
     icons.qrc \

@@ -15,7 +15,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="icons.qrc">
-    <normaloff>:/images/icon.png</normaloff>:/images/icon.png</iconset>
+    <normaloff>:/appicon.ico</normaloff>:/appicon.ico</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -69,6 +69,7 @@
     </property>
     <addaction name="actionAdd_Graph"/>
     <addaction name="actionAdd_Bar_Graph"/>
+    <addaction name="actionAdd_Pie_Chart"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -114,6 +115,7 @@
    <addaction name="separator"/>
    <addaction name="actionAdd_Graph"/>
    <addaction name="actionAdd_Bar_Graph"/>
+   <addaction name="actionAdd_Pie_Chart"/>
    <addaction name="separator"/>
    <addaction name="actionLockWidgets"/>
    <addaction name="actionSettings"/>
@@ -170,7 +172,7 @@
   <action name="actionAdd_Graph">
    <property name="icon">
     <iconset resource="icons.qrc">
-     <normaloff>:/images/graph.png</normaloff>:/images/graph.png</iconset>
+     <normaloff>:/images/linechart.ico</normaloff>:/images/linechart.ico</iconset>
    </property>
    <property name="text">
     <string>Add Line Chart</string>
@@ -305,6 +307,15 @@
   <action name="actionDebug_Tools">
    <property name="text">
     <string>Debug Tools</string>
+   </property>
+  </action>
+  <action name="actionAdd_Pie_Chart">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/images/piechart.ico</normaloff>:/images/piechart.ico</iconset>
+   </property>
+   <property name="text">
+    <string>Add Pie Chart</string>
    </property>
   </action>
  </widget>

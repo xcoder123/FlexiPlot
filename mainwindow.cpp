@@ -19,6 +19,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(ui->actionAdd_Graph, SIGNAL(triggered()), this, SLOT(addLineGraph()));
     connect(ui->actionAdd_Bar_Graph, SIGNAL(triggered(bool)), this, SLOT(addBarGraph()));
+    connect(ui->actionAdd_Pie_Chart, SIGNAL(triggered(bool)), this, SLOT(addPieChart()));
     connect(ui->actionAdd_Map, SIGNAL(triggered()), this, SLOT(addMap()));
     connect(ui->actionSettings, SIGNAL(triggered()), this, SLOT(openSettings()));
 
@@ -211,6 +212,10 @@ void MainWindow::openDash(QString fileName)
                 {
                     widget = new BarGraph(this);
                 }
+                else if(xml.attributes().value("type").toInt() == PieChart::Type)
+                {
+                    widget = new PieChart(this);
+                }
                 else
                 {
                     QMessageBox::critical(this, "Error", "Unknown widget type. Dash file might be of old version or corrupted");
@@ -388,8 +393,12 @@ void MainWindow::newDash()
 
 void MainWindow::showAbout()
 {
-    QMessageBox::information(this, "About", "FlexiPlot is a tool for quickly plotting data from micro-controller.\nThis a very early Alpha\nOfficial website: http://morf.lv\nDeveloped by: Raivis Strogonovs");
-    QMessageBox::information(this, "Reminder for my self", "To-Do:\nShow data table\nAllow custom baudrate\nFix crash, when packet is incorrect\nMake proper settings for linux and mac\nMake proper about dialog\nVirtual terminal(low priority)\nSave plot data and picture\nAllow sending data without color\nAllow changing color without data\nProper help dialog with instructions on how to use it\nMultiple languages (low priority)\nAre you sure dialog, when closing a plot window\nAllow multiple serial ports(low priority)\nStop all and start all action button\nLongitude latitude + google maps\nOpen plotting data from file\nXY time plot, where X is user set time");
+//    QMessageBox::information(this, "About", "FlexiPlot is a tool for quickly plotting data from micro-controller.\nThis a very early Alpha\nOfficial website: http://morf.lv\nDeveloped by: Raivis Strogonovs");
+//    QMessageBox::information(this, "Reminder for my self", "To-Do:\nShow data table\nAllow custom baudrate\nFix crash, when packet is incorrect\nMake proper settings for linux and mac\nMake proper about dialog\nVirtual terminal(low priority)\nSave plot data and picture\nAllow sending data without color\nAllow changing color without data\nProper help dialog with instructions on how to use it\nMultiple languages (low priority)\nAre you sure dialog, when closing a plot window\nAllow multiple serial ports(low priority)\nStop all and start all action button\nLongitude latitude + google maps\nOpen plotting data from file\nXY time plot, where X is user set time");
+
+
+    about.show();
+    about.setFixedSize( about.size() );
 
     qDebug() << "Packets dropped: " << packetsDropped;
 }
@@ -407,7 +416,7 @@ void MainWindow::addLineGraph()
     LineGraph* plot = new LineGraph(this);
     plot->setId( QString("P%1").arg(widgets.size()) );
     QMdiSubWindow *subWindow = ui->mdiArea->addSubWindow(plot);
-    subWindow->setWindowIcon( QIcon("://images/graph.png") );
+    subWindow->setWindowIcon( QIcon("://images/linechart.ico") );
 
     plot->show();
 
@@ -432,6 +441,24 @@ void MainWindow::addBarGraph()
     connect(barGraph, SIGNAL(destroyed()), this, SLOT(deleteWidget()));
 
     widgets.append(barGraph);
+
+}
+
+void MainWindow::addPieChart()
+{
+
+    Config::getInstance()->setUnsavedChanges(true);
+
+    PieChart* pieChart = new PieChart(this);
+    pieChart->setId( QString("P%1").arg( widgets.size()) );
+    QMdiSubWindow *subWindow = ui->mdiArea->addSubWindow(pieChart);
+    subWindow->setWindowIcon( QIcon("://images/piechart.ico") );
+
+    pieChart->show();
+
+    connect(pieChart, SIGNAL(destroyed()), this, SLOT(deleteWidget()));
+
+    widgets.append(pieChart);
 
 }
 

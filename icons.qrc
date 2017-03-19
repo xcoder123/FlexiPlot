@@ -25,5 +25,8 @@
         <file>images/format-text-bold.png</file>
         <file>images/format-text-italic.png</file>
         <file>images/format-text-underline.png</file>
+        <file>images/piechart.ico</file>
+        <file>images/linechart.ico</file>
+        <file>appicon.ico</file>
     </qresource>
 </RCC>

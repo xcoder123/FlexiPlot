@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>418</width>
+    <width>704</width>
     <height>406</height>
    </rect>
   </property>
@@ -19,46 +19,149 @@
      <property name="title">
       <string>Packet Injector</string>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout">
+     <layout class="QVBoxLayout" name="verticalLayout_4">
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
-        <property name="topMargin">
-         <number>0</number>
+       <widget class="QSplitter" name="splitter">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
         </property>
-        <item>
-         <widget class="QLabel" name="label">
-          <property name="text">
-           <string>History:</string>
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <widget class="QWidget" name="verticalLayoutWidget">
+         <layout class="QVBoxLayout" name="verticalLayout">
+          <property name="topMargin">
+           <number>0</number>
           </property>
-         </widget>
-        </item>
-        <item>
-         <spacer name="horizontalSpacer">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>40</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item>
-         <widget class="QPushButton" name="clearBtn">
-          <property name="focusPolicy">
-           <enum>Qt::NoFocus</enum>
-          </property>
-          <property name="text">
-           <string>Clear</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <widget class="QListWidget" name="historyListWidget"/>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_2">
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <item>
+             <widget class="QLabel" name="label">
+              <property name="text">
+               <string>History:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QPushButton" name="clearBtn">
+              <property name="focusPolicy">
+               <enum>Qt::NoFocus</enum>
+              </property>
+              <property name="text">
+               <string>Clear</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QListWidget" name="historyListWidget"/>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="verticalLayoutWidget_2">
+         <layout class="QVBoxLayout" name="verticalLayout_3">
+          <item>
+           <widget class="QLabel" name="label_3">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Examples:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QTreeWidget" name="examplesTreeWidget">
+            <column>
+             <property name="text">
+              <string>Packet</string>
+             </property>
+            </column>
+            <item>
+             <property name="text">
+              <string>Pie Chart</string>
+             </property>
+             <property name="icon">
+              <iconset resource="icons.qrc">
+               <normaloff>:/images/piechart.ico</normaloff>:/images/piechart.ico</iconset>
+             </property>
+             <item>
+              <property name="text">
+               <string>{P0|Slice 1|10|Slice 2|30|Slice 3|20}</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>{P0|Slice 1|255,0,0|10.0048|Slice 2|0,255,0|30|Slice 3|0,0,255|20}</string>
+              </property>
+             </item>
+            </item>
+            <item>
+             <property name="text">
+              <string>Bar Chart</string>
+             </property>
+             <property name="icon">
+              <iconset resource="icons.qrc">
+               <normaloff>:/images/view-statistics.png</normaloff>:/images/view-statistics.png</iconset>
+             </property>
+             <item>
+              <property name="text">
+               <string>{P0|Jan;Feb;Mar|Jane|25 15 17|John|8 9 23}</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>{P0|Jan;Feb;Mar|Jane|255,0,0|25 15 17|John|0,255,0|8 9 23}</string>
+              </property>
+             </item>
+            </item>
+            <item>
+             <property name="text">
+              <string>Line Chart</string>
+             </property>
+             <property name="icon">
+              <iconset resource="icons.qrc">
+               <normaloff>:/images/graph.png</normaloff>:/images/graph.png</iconset>
+             </property>
+             <item>
+              <property name="text">
+               <string>{P0|Quadratic|255,0,0|-5 25 -4 16 -3 9 -2 4 -1 1 0 0 1 1 2 4 3 9 4 16 5 25}</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>{P0|Roll|255,0,0|25|Pitch|0,255,0|56}</string>
+              </property>
+             </item>
+            </item>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </widget>
       </item>
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout">
@@ -93,8 +196,9 @@
  <tabstops>
   <tabstop>packetLineEdit</tabstop>
   <tabstop>sendPacketBtn</tabstop>
-  <tabstop>historyListWidget</tabstop>
  </tabstops>
- <resources/>
+ <resources>
+  <include location="icons.qrc"/>
+ </resources>
  <connections/>
 </ui>

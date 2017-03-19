@@ -3,6 +3,7 @@
 
 #include "linegraph.h"
 #include "bargraph.h"
+#include "piechart.h"
 
 class Helper
 {

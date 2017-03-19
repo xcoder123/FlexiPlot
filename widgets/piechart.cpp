@@ -1,19 +1,15 @@
-#include "bargraph.h"
-#include "ui_bargraph.h"
+#include "piechart.h"
+#include "ui_piechart.h"
 
 QT_CHARTS_USE_NAMESPACE
 
-BarGraph::BarGraph(QWidget *parent) :
+PieChart::PieChart(QWidget *parent) :
     AbstractWidget(parent),
-    ui(new Ui::BarGraph)
+    ui(new Ui::PieChart)
 {
     ui->setupUi(this);
 
-
-
-
     chart = new QChart();
-
 
     chart->setTitle( ui->titleEdit->text() );
     QFont tFont = chart->titleFont();
@@ -21,31 +17,26 @@ BarGraph::BarGraph(QWidget *parent) :
     tFont.setBold( true );
     chart->setTitleFont( tFont );
 
-    chart->setAnimationOptions(QChart::SeriesAnimations);
 
-    chart->createDefaultAxes();
+    chart->setAnimationOptions( QChart::AllAnimations );
 
-    chart->legend()->setVisible(true);
-    chart->legend()->setAlignment(Qt::AlignBottom);
-
-//    QChartView *chartView = new QChartView(chart);
     ui->chartView->setChart( chart );
     ui->chartView->setRenderHint(QPainter::Antialiasing);
 
-//    this->layout()->addWidget( chartView );
-
-    this->setWindowTitle(ui->titleEdit->text());
 
     connect(ui->idEdit, SIGNAL(textEdited(QString)), this, SLOT(setId(QString)));
     connect(ui->titleEdit, SIGNAL(textEdited(QString)), this, SLOT(setTitle(QString)));
-    connect(ui->nameXaxis, SIGNAL(textEdited(QString)), this, SLOT(settingsChanged()));
-    connect(ui->nameYaxis, SIGNAL(textEdited(QString)), this, SLOT(settingsChanged()));
 
-    connect(ui->barChartTypeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(settingsChanged()));
+    connect(ui->hPosSpinBox, SIGNAL(valueChanged(double)), this, SLOT(settingsChanged()));
+    connect(ui->vPosSpinBox, SIGNAL(valueChanged(double)), this, SLOT(settingsChanged()));
+    connect(ui->sizeFactorSpinBox, SIGNAL(valueChanged(double)), this, SLOT(settingsChanged()));
+    connect(ui->startAngleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(settingsChanged()));
+    connect(ui->endAngleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(settingsChanged()));
+    connect(ui->holeSizeSpinBox, SIGNAL(valueChanged(double)), this, SLOT(settingsChanged()));
+    connect(ui->explodeSliceCheckBox, SIGNAL(stateChanged(int)), this, SLOT(settingsChanged()));
     connect(ui->animationComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(settingsChanged()));
     connect(ui->themeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(settingsChanged()));
     connect(ui->antialiasingCheckBox, SIGNAL(stateChanged(int)), this, SLOT(settingsChanged()));
-
 
     ui->legendDetachedParamGroup->setVisible(false);
     connect(ui->legendShowCheckBox, SIGNAL(stateChanged(int)), this, SLOT(settingsChanged()));
@@ -60,75 +51,60 @@ BarGraph::BarGraph(QWidget *parent) :
     connect(ui->legendWidthSpinBox, SIGNAL(valueChanged(double)), this, SLOT(settingsChanged()));
     connect(ui->legendHeightSpinBox, SIGNAL(valueChanged(double)), this, SLOT(settingsChanged()));
 
-    connect(ui->showLabelsCheckBox, SIGNAL(stateChanged(int)), this, SLOT(settingsChanged()));
-    connect(ui->labelAngleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(settingsChanged()));
-    connect(ui->labelFormatEdit, SIGNAL(textChanged(QString)), this, SLOT(settingsChanged()));
+    connect(ui->labelArmLengthSpinBox, SIGNAL(valueChanged(double)), this, SLOT(settingsChanged()));
     connect(ui->labelPosComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(settingsChanged()));
+    connect(ui->showLabelsCheckBox, SIGNAL(stateChanged(int)), this, SLOT(settingsChanged()));
 
-    connect(ui->autoScaleValueAxisCheckBox, SIGNAL(stateChanged(int)), this, SLOT(settingsChanged()));
-    connect(ui->maxValueAxisSpinBox, SIGNAL(valueChanged(double)), this, SLOT(settingsChanged()));
-    connect(ui->minValueAxisSpinBox, SIGNAL(valueChanged(double)), this, SLOT(settingsChanged()));
-
-
-    readyToPlot = true;
 }
 
-void BarGraph::settingsChanged()
+void PieChart::settingsChanged()
 {
-    if(!readyToPlot)
-        return;
-
     qDebug() << "Settings changed by: " << QObject::sender();
     Config::getInstance()->setUnsavedChanges(true);
     plot();
 }
 
-void BarGraph::setTitle(QString str)
-{
-    chart->setTitle( str );
-    this->setWindowTitle(QString("%1 \t|\t ID: %2").arg(str).arg(id));
-    Config::getInstance()->setUnsavedChanges(true);
-}
-
-bool BarGraph::validPacket(QString packet)
+bool PieChart::validPacket(QString packet)
 {
     /* Regular expresion for multi column packet:
      * Colo Test cases:
-     *             P0|Jan;Feb;Mar|Jane|255,0,0|25 15 17|John|255,0,0|8 9 23
-     *             P0|Jan|Jane|255,0,0|25|John|255,0,0|8
+     *             P0|Slice 1|255,0,0|10.0048|Slice 2|0,255,0|30|Slice 3|0,0,255|20
+     *
      * Regexp:
-     *             [a-zA-Z0-9]+\|[a-zA-Z0-9 \;]+(\|[a-zA-Z0-9 ]+\|\d{1,3},\d{1,3},\d{1,3}\|(\-*\d+(\.{0,1}\d+)*\s?)*)+
+     *             [a-zA-Z0-9]+(\|[a-zA-Z0-9 ]+\|\d{1,3},\d{1,3},\d{1,3}\|(\-*\d+(\.{0,1}\d+)*)*)+
      *
      *
      * No Color Test Cases:
-     *              P0|Jan;Feb;Mar|Jane|25 15 17|John|8 9 23
-     *              P0|Jan|Jane|25|John|8
+     *              P0|Slice 1|10|Slice 2|30|Slice 3|20
      *
      * Regexp:
-     *              [a-zA-Z0-9]+\|[a-zA-Z0-9 \;]+(\|[a-zA-Z0-9 ]+\|(\-*\d+(\.{0,1}\d+)*\s?)*)+
+     *              [a-zA-Z0-9]+(\|[a-zA-Z0-9 ]+\|(\-*\d+(\.{0,1}\d+)*)*)+
      *
      */
-    QRegExp fullPacket("[a-zA-Z0-9]+\\|[a-zA-Z0-9 \\;]+(\\|[a-zA-Z0-9 ]+\\|\\d{1,3},\\d{1,3},\\d{1,3}\\|(\\-*\\d+(\\.{0,1}\\d+)*\\s?)*)+");
-    QRegExp noColorPacket("[a-zA-Z0-9]+\\|[a-zA-Z0-9 \\;]+(\\|[a-zA-Z0-9 ]+\\|(\\-*\\d+(\\.{0,1}\\d+)*\\s?)*)+");
+
+    QRegExp fullPacket("[a-zA-Z0-9]+(\\|[a-zA-Z0-9 ]+\\|\\d{1,3},\\d{1,3},\\d{1,3}\\|(\\-*\\d+(\\.{0,1}\\d+)*)*)+");
+    QRegExp noColorPacket("[a-zA-Z0-9]+(\\|[a-zA-Z0-9 ]+\\|(\\-*\\d+(\\.{0,1}\\d+)*)*)+");
 
 
     return fullPacket.exactMatch(packet) || noColorPacket.exactMatch( packet );
 }
 
-void BarGraph::serialPacket(QStringList packet)
+void PieChart::reset()
 {
-//    qDebug() << packet;
-    categories = packet[1].split(";");
 
-//    qDebug() << categories;
+}
+
+void PieChart::serialPacket(QStringList packet)
+{
+    qDebug() << packet;
 
     items.clear();
 
-    for(int i=2; i<packet.length(); i++)
+    for(int i=1; i<packet.length(); i++)
     {
-        bar_graph_plot_item_t item;
+        pie_chart_plot_item_t item;
 
-        item.set_name = packet[i];
+        item.name = packet[i];
 
         QRegExp rx("\\d{1,},\\d{1,},\\d{1,}");
         QRegExpValidator v(rx,this);
@@ -139,18 +115,16 @@ void BarGraph::serialPacket(QStringList packet)
             QStringList color = packet[i+1].split(",");
             item.color = QColor(color[0].toInt(),color[1].toInt(),color[2].toInt());
             item.colorIsSet = true;
+            item.value = packet[i+2].toDouble();
 
-            values = packet[i+2].split(" ");
             i += 2;
         }
         else
         {
-            values = packet[i+1].split(" ");
+            item.colorIsSet = false;
+            item.value = packet[i+1].toDouble();
             i += 1;
         }
-
-        foreach(QString valueStr, values)
-            item.values << valueStr.toDouble();
 
         items.append( item );
 
@@ -159,91 +133,40 @@ void BarGraph::serialPacket(QStringList packet)
     plot();
 }
 
-void BarGraph::plot()
+void PieChart::plot()
 {
-    if(!readyToPlot)
-        return;
-
-    qDeleteAll( chart->series() );
-    qDeleteAll( chart->axes() );
+    chart->removeAllSeries();
 
     chart->setAnimationOptions( (QChart::AnimationOption)ui->animationComboBox->currentIndex() );
     ui->chartView->setRenderHint(QPainter::Antialiasing, ui->antialiasingCheckBox->isChecked());
 
-    QAbstractBarSeries* series;
-    switch( ui->barChartTypeComboBox->currentIndex() ) {
-        case TYPE_NORMAL: series = new QBarSeries(); break;
-        case TYPE_STACKED: series = new QStackedBarSeries(); break;
-        case TYPE_PERCENT: series = new QPercentBarSeries(); break;
-        case TYPE_HORIZONTAL: series = new QHorizontalBarSeries(); break;
-        case TYPE_HORIZONTAL_STACKED: series = new QHorizontalStackedBarSeries(); break;
-        case TYPE_HORIZONTAL_PERCENT: series = new QHorizontalPercentBarSeries(); break;
-        default: series = new QBarSeries();
-    }
+    //create series
+    QPieSeries * series = new QPieSeries();
+//    series->setLabelsVisible();
 
-//    series->setLabelsVisible( true );
+    series->setHorizontalPosition( ui->hPosSpinBox->value() );
+    series->setVerticalPosition( ui->vPosSpinBox->value() );
+    series->setPieSize( ui->sizeFactorSpinBox->value() );
+    series->setPieStartAngle( ui->startAngleSpinBox->value() );
+    series->setPieEndAngle( ui->endAngleSpinBox->value() );
+    series->setHoleSize( ui->holeSizeSpinBox->value() );
 
-    foreach(bar_graph_plot_item_t item, items)
+    foreach( pie_chart_plot_item_t sliceItem, items )
     {
-        QBarSet *set = new QBarSet(item.set_name);
-        if(item.colorIsSet)
-            set->setColor( item.color );
-        set->append( item.values );
-
-        series->append( set );
+        FlexiPieSlice * slice = new FlexiPieSlice( sliceItem.name, sliceItem.value );
+        slice->setExplodeOnHover( ui->explodeSliceCheckBox->isChecked() );
+        if(sliceItem.colorIsSet)
+        {
+            //slice->setPen(QPen(sliceItem.color, 2));
+            slice->setBrush(sliceItem.color);
+        }
+        *series << slice;
     }
 
     chart->addSeries(series);
 
-    QBarCategoryAxis *axis = new QBarCategoryAxis();
-    axis->append(categories);
-
-
-    chart->createDefaultAxes();
-    if(     ui->barChartTypeComboBox->currentIndex() == TYPE_NORMAL ||
-            ui->barChartTypeComboBox->currentIndex() == TYPE_STACKED ||
-            ui->barChartTypeComboBox->currentIndex() == TYPE_PERCENT)
-    {
-        chart->setAxisX(axis, series);
-
-        if(!ui->autoScaleValueAxisCheckBox->isChecked())
-        {
-            QAbstractAxis *aValueAxis = chart->axes(Qt::Vertical).at(0);
-            QValueAxis  *valueAxis = qobject_cast<QValueAxis *>( aValueAxis );
-//            qDebug() << chart->axes(Qt::Vertical).at(0) << ay << ay->max();
-            valueAxis->setMax( ui->maxValueAxisSpinBox->value() );
-            valueAxis->setMin( ui->minValueAxisSpinBox->value() );
-        }
-    }
-    else
-    {
-        chart->setAxisY(axis, series);
-
-        if(!ui->autoScaleValueAxisCheckBox->isChecked())
-        {
-            QAbstractAxis *aValueAxis = chart->axes(Qt::Horizontal).at(0);
-            QValueAxis  *valueAxis = qobject_cast<QValueAxis *>( aValueAxis );
-//            qDebug() << chart->axes(Qt::Vertical).at(0) << ay << ay->max();
-            valueAxis->setMax( ui->maxValueAxisSpinBox->value() );
-            valueAxis->setMin( ui->minValueAxisSpinBox->value() );
-        }
-    }
-
-    chart->axisX()->setTitleText( ui->nameXaxis->text() );
-    chart->axisY()->setTitleText( ui->nameYaxis->text() );
-
-
-
-
     //Legend settings
     chart->legend()->setVisible(ui->legendShowCheckBox->isChecked());
-
-    //Hmm I haven't figured out yet, how to temprarly hide a set in series... only to delete
-    /*foreach(QLegendMarker* marker, chart->legend()->markers())
-    {
-        disconnect(marker, SIGNAL(clicked()), this, SLOT(legendMarkerClicked()));
-        connect(marker, SIGNAL(clicked()), this, SLOT(legendMarkerClicked()));
-    }*/
 
     if(ui->legendPositionComboBox->currentIndex() == POS_DETACHED && chart->legend()->isAttachedToChart() )
     {
@@ -282,24 +205,20 @@ void BarGraph::plot()
     series->setLabelsVisible( ui->showLabelsCheckBox->isChecked() );
     if(ui->showLabelsCheckBox->isChecked())
     {
-        series->setLabelsAngle( ui->labelAngleSpinBox->value() );
-        series->setLabelsFormat( ui->labelFormatEdit->text() );
-        series->setLabelsPosition( (QAbstractBarSeries::LabelsPosition)ui->labelPosComboBox->currentIndex() );
+        foreach( QPieSlice* slice, series->slices())
+            slice->setLabelArmLengthFactor( ui->labelArmLengthSpinBox->value() );
+        series->setLabelsPosition( (QPieSlice::LabelPosition)ui->labelPosComboBox->currentIndex() );
     }
 
-
+    //Configure theme
     chart->setTheme( (QChart::ChartTheme) ui->themeComboBox->currentIndex() );
     QFont tFont = chart->titleFont();
     tFont.setPointSizeF( 15 );
     tFont.setBold( true );
     chart->setTitleFont( tFont );
-
-
-
-
 }
 
-void BarGraph::updateDetachedLegendLayout()
+void PieChart::updateDetachedLegendLayout()
 {
     chart->legend()->setGeometry(QRectF(  ui->legendHPosSpinBox->value(),
                                           ui->legendVPosSpinBox->value(),
@@ -308,14 +227,18 @@ void BarGraph::updateDetachedLegendLayout()
     chart->legend()->update();
 }
 
-void BarGraph::xmlStream(QXmlStreamWriter *writer)
+void PieChart::xmlStream(QXmlStreamWriter *writer)
 {
     writer->writeTextElement("id", this->id);
     writer->writeTextElement("title", ui->titleEdit->text());
-    writer->writeTextElement("xname", ui->nameXaxis->text());
-    writer->writeTextElement("yname", ui->nameYaxis->text());
 
-    writer->writeTextElement("type", QString::number(ui->barChartTypeComboBox->currentIndex()) );
+    writer->writeTextElement("hpos", QString::number(ui->hPosSpinBox->value()) );
+    writer->writeTextElement("vpos", QString::number(ui->hPosSpinBox->value()) );
+    writer->writeTextElement("size_factor", QString::number(ui->sizeFactorSpinBox->value()) );
+    writer->writeTextElement("start_angle", QString::number(ui->startAngleSpinBox->value()) );
+    writer->writeTextElement("end_angle", QString::number(ui->endAngleSpinBox->value()) );
+    writer->writeTextElement("hole_size", QString::number(ui->holeSizeSpinBox->value()) );
+    writer->writeTextElement("explode_slice_on_hover", QString::number(ui->explodeSliceCheckBox->isChecked()) );
     writer->writeTextElement("animation", QString::number(ui->animationComboBox->currentIndex()) );
     writer->writeTextElement("theme", QString::number(ui->themeComboBox->currentIndex()) );
     writer->writeTextElement("antialiasing", QString::number(ui->antialiasingCheckBox->isChecked()) );
@@ -333,20 +256,12 @@ void BarGraph::xmlStream(QXmlStreamWriter *writer)
     writer->writeTextElement("legend_font_size", QString::number(ui->legendFontSizeSpinBox->value()) );
 
     writer->writeTextElement("labels_enabled", QString::number(ui->showLabelsCheckBox->isChecked()) );
-    writer->writeTextElement("labels_angle", QString::number(ui->labelAngleSpinBox->value()) );
+    writer->writeTextElement("label_arm_length", QString::number(ui->labelArmLengthSpinBox->value()) );
     writer->writeTextElement("labels_position", QString::number(ui->labelPosComboBox->currentIndex()) );
-    writer->writeTextElement("labels_format", ui->labelFormatEdit->text() );
-
-    writer->writeTextElement("auto_scale_value_axis", QString::number(ui->autoScaleValueAxisCheckBox->isChecked() ) );
-    writer->writeTextElement("min_scale_value_axis", QString::number(ui->minValueAxisSpinBox->value()) );
-    writer->writeTextElement("max_scale_value_axis", QString::number(ui->maxValueAxisSpinBox->value()) );
-
-
 }
 
-void BarGraph::xmlParse(QXmlStreamReader *xml)
+void PieChart::xmlParse(QXmlStreamReader *xml)
 {
-    readyToPlot = false;
     blockAllSignals(true);
     /* Let's check that we're really getting a person. */
     if(xml->tokenType() != QXmlStreamReader::StartElement &&
@@ -393,22 +308,49 @@ void BarGraph::xmlParse(QXmlStreamReader *xml)
             this->setWindowTitle(QString("%1 \t|\t ID: %2").arg(ui->titleEdit->text()).arg(ui->idEdit->text()));
         }
 
-        if(xml->name() == "xname")
+        if(xml->name() == "hpos")
         {
-            QString str = xml->readElementText();
-            ui->nameXaxis->setText(str);
+            double realVal = xml->readElementText().toDouble();
+            ui->hPosSpinBox->setValue(realVal);
         }
 
-        if(xml->name() == "yname")
+        if(xml->name() == "vpos")
         {
-            QString str = xml->readElementText();
-            ui->nameYaxis->setText(str);
+            double realVal = xml->readElementText().toDouble();
+            ui->vPosSpinBox->setValue(realVal);
         }
 
-        if(xml->name() == "type")
+        if(xml->name() == "size_factor")
+        {
+            double realVal = xml->readElementText().toDouble();
+            ui->sizeFactorSpinBox->setValue(realVal);
+        }
+
+        if(xml->name() == "start_angle")
+        {
+            double realVal = xml->readElementText().toDouble();
+            ui->startAngleSpinBox->setValue(realVal);
+        }
+
+        if(xml->name() == "end_angle")
+        {
+            double realVal = xml->readElementText().toDouble();
+            ui->endAngleSpinBox->setValue(realVal);
+        }
+
+        if(xml->name() == "hole_size")
+        {
+            double realVal = xml->readElementText().toDouble();
+            ui->holeSizeSpinBox->setValue(realVal);
+        }
+
+        if(xml->name() == "explode_slice_on_hover")
         {
             int intVal = xml->readElementText().toInt();
-            ui->barChartTypeComboBox->setCurrentIndex(intVal);
+            if(intVal > 0)
+                ui->explodeSliceCheckBox->setCheckState( Qt::Checked );
+            else
+                ui->explodeSliceCheckBox->setCheckState( Qt::Unchecked );
         }
 
         if(xml->name() == "animation")
@@ -512,10 +454,10 @@ void BarGraph::xmlParse(QXmlStreamReader *xml)
                 ui->showLabelsCheckBox->setCheckState( Qt::Unchecked );
         }
 
-        if(xml->name() == "labels_angle")
+        if(xml->name() == "label_arm_length")
         {
             double realVal = xml->readElementText().toDouble();
-            ui->labelAngleSpinBox->setValue(realVal);
+            ui->labelArmLengthSpinBox->setValue(realVal);
         }
 
         if(xml->name() == "labels_position")
@@ -524,103 +466,52 @@ void BarGraph::xmlParse(QXmlStreamReader *xml)
             ui->labelPosComboBox->setCurrentIndex(intVal);
         }
 
-        if(xml->name() == "labels_format")
-        {
-            QString str = xml->readElementText();
-            ui->labelFormatEdit->setText( str );
-        }
 
-        if(xml->name() == "auto_scale_value_axis")
-        {
-            int intVal = xml->readElementText().toInt();
-            if(intVal > 0)
-                ui->autoScaleValueAxisCheckBox->setCheckState( Qt::Checked );
-            else
-                ui->autoScaleValueAxisCheckBox->setCheckState( Qt::Unchecked );
-        }
 
-        if(xml->name() == "min_scale_value_axis")
-        {
-            double realVal = xml->readElementText().toDouble();
-            ui->minValueAxisSpinBox->setValue(realVal);
-        }
-
-        if(xml->name() == "max_scale_value_axis")
-        {
-            double realVal = xml->readElementText().toDouble();
-            ui->maxValueAxisSpinBox->setValue(realVal);
-        }
 
 
         /* ...and next... */
         xml->readNext();
     }
 
-    readyToPlot = true;
     blockAllSignals(false);
     settingsChanged();
 }
 
-void BarGraph::reset()
+void PieChart::setId(QString str)
 {
-    qDeleteAll( chart->series() );
-    qDeleteAll( chart->axes() );
+    id = str;
+    this->setWindowTitle(QString("%1 \t|\t ID: %2").arg(ui->titleEdit->text()).arg(str));
+
+    ui->idEdit->blockSignals(true);
+    ui->idEdit->setText( str );
+    ui->idEdit->blockSignals(false);
+
+    Config::getInstance()->setUnsavedChanges(true);
 }
 
-void BarGraph::setId(QString str)
+void PieChart::setTitle(QString str)
 {
-   id = str;
-   this->setWindowTitle(QString("%1 \t|\t ID: %2").arg(ui->titleEdit->text()).arg(str));
-
-   ui->idEdit->blockSignals(true);
-   ui->idEdit->setText( str );
-   ui->idEdit->blockSignals(false);
-
-   Config::getInstance()->setUnsavedChanges(true);
-
+    chart->setTitle( str );
+    this->setWindowTitle(QString("%1 \t|\t ID: %2").arg(str).arg(id));
+    Config::getInstance()->setUnsavedChanges(true);
 }
 
-//Hmm I haven't figured out yet, how to temprarly hide a set in series... only to delete
-void BarGraph::legendMarkerClicked()
-{
-    QLegendMarker* marker = qobject_cast<QLegendMarker*>(QObject::sender());
-    Q_ASSERT(marker);
-
-    qDebug() << marker->type();
-
-    switch(marker->type())
-    {
-        case QLegendMarker::LegendMarkerTypeBar:
-        {
-            QAbstractBarSeries * barSeries = qobject_cast<QAbstractBarSeries*>( marker->series() );
-            Q_ASSERT(barSeries);
-
-
-            qDebug() << barSeries->barSets().at(0);
-
-            QBarLegendMarker* barMarker = qobject_cast<QBarLegendMarker*>(marker);
-            Q_ASSERT(barMarker);
-            qDebug() << barMarker->barset();
-
-            barSeries->take(barMarker->barset());
-
-
-            break;
-        }
-        default: qDebug() << "Unknown marker"; break;
-    }
-}
-
-void BarGraph::blockAllSignals(bool block)
+void PieChart::blockAllSignals(bool block)
 {
     ui->idEdit->blockSignals(block);
     ui->titleEdit->blockSignals(block);
-    ui->nameXaxis->blockSignals(block);
-    ui->nameYaxis->blockSignals(block);
 
-    ui->barChartTypeComboBox->blockSignals(block);
+    ui->hPosSpinBox->blockSignals(block);
+    ui->vPosSpinBox->blockSignals(block);
+    ui->sizeFactorSpinBox->blockSignals(block);
+    ui->startAngleSpinBox->blockSignals(block);
+    ui->endAngleSpinBox->blockSignals(block);
+    ui->holeSizeSpinBox->blockSignals(block);
+    ui->explodeSliceCheckBox->blockSignals(block);
     ui->animationComboBox->blockSignals(block);
     ui->themeComboBox->blockSignals(block);
+    ui->antialiasingCheckBox->blockSignals(block);
 
     ui->legendShowCheckBox->blockSignals(block);
     ui->legendBoldCheckBox->blockSignals(block);
@@ -634,17 +525,12 @@ void BarGraph::blockAllSignals(bool block)
     ui->legendWidthSpinBox->blockSignals(block);
     ui->legendHeightSpinBox->blockSignals(block);
 
-    ui->showLabelsCheckBox->blockSignals(block);
-    ui->labelAngleSpinBox->blockSignals(block);
-    ui->labelFormatEdit->blockSignals(block);
+    ui->labelArmLengthSpinBox->blockSignals(block);
     ui->labelPosComboBox->blockSignals(block);
-
-    ui->autoScaleValueAxisCheckBox->blockSignals(block);
-    ui->minValueAxisSpinBox->blockSignals(block);
-    ui->maxValueAxisSpinBox->blockSignals(block);
+    ui->showLabelsCheckBox->blockSignals(block);
 }
 
-BarGraph::~BarGraph()
+PieChart::~PieChart()
 {
     delete ui;
 }

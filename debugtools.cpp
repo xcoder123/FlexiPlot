@@ -15,7 +15,21 @@ DebugTools::DebugTools(QWidget *parent) :
 
     ui->packetLineEdit->installEventFilter( this );
 
+    QList<int> sizes;
+    sizes << 150 << 50;
+    ui->splitter->setSizes(sizes);
+    connect(ui->examplesTreeWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), this, SLOT(exampleItemSelected()));
+
+
     loadHistory();
+}
+
+void DebugTools::exampleItemSelected()
+{
+    if( ui->examplesTreeWidget->currentItem()->parent() == NULL )
+        return;
+
+    ui->packetLineEdit->setText( ui->examplesTreeWidget->currentItem()->text(0) );
 }
 
 void DebugTools::saveHistory()

@@ -17,10 +17,12 @@
 #include "terminal.h"
 #include "widgets/helper.h"
 #include "debugtools.h"
+#include "aboutdialog.h"
 
 #include "widgets/abstractwidget.h"
 #include "widgets/linegraph.h"
 #include "widgets/bargraph.h"
+#include "widgets/piechart.h"
 //#include "mapper.h"
 
 namespace Ui {
@@ -53,6 +55,7 @@ private slots:
 
     void addLineGraph();
     void addBarGraph();
+    void addPieChart();
     void addMap();
     void deleteWidget();
 
@@ -95,6 +98,8 @@ private:
 
     QComboBox * baudrateComboBox;
     QComboBox * serialPortComboBox;
+
+    AboutDialog about;
 };
 
 #endif // MAINWINDOW_H

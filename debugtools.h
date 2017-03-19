@@ -29,6 +29,8 @@ private slots:
     void sentHistoryListItemClicked();
     void clear();
 
+    void exampleItemSelected();
+
 protected:
     bool eventFilter(QObject *obj, QEvent *e);
 
