@@ -26,6 +26,9 @@
 
 #include <QtCharts>
 #include <QtCharts/QChartView>
+#include <QtCharts/QAbstractAxis>
+#include <QtCharts/QBarCategoryAxis>
+#include <QtCharts/QValueAxis>
 
 
 #include "plotitem.h"

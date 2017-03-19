@@ -64,6 +64,10 @@ BarGraph::BarGraph(QWidget *parent) :
     connect(ui->labelFormatEdit, SIGNAL(textChanged(QString)), this, SLOT(settingsChanged()));
     connect(ui->labelPosComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(settingsChanged()));
 
+    connect(ui->autoScaleValueAxisCheckBox, SIGNAL(stateChanged(int)), this, SLOT(settingsChanged()));
+    connect(ui->maxValueAxisSpinBox, SIGNAL(valueChanged(double)), this, SLOT(settingsChanged()));
+    connect(ui->minValueAxisSpinBox, SIGNAL(valueChanged(double)), this, SLOT(settingsChanged()));
+
 
     readyToPlot = true;
 }
@@ -193,20 +197,41 @@ void BarGraph::plot()
     QBarCategoryAxis *axis = new QBarCategoryAxis();
     axis->append(categories);
 
+
     chart->createDefaultAxes();
     if(     ui->barChartTypeComboBox->currentIndex() == TYPE_NORMAL ||
             ui->barChartTypeComboBox->currentIndex() == TYPE_STACKED ||
             ui->barChartTypeComboBox->currentIndex() == TYPE_PERCENT)
     {
         chart->setAxisX(axis, series);
+
+        if(!ui->autoScaleValueAxisCheckBox->isChecked())
+        {
+            QAbstractAxis *aValueAxis = chart->axes(Qt::Vertical).at(0);
+            QValueAxis  *valueAxis = qobject_cast<QValueAxis *>( aValueAxis );
+//            qDebug() << chart->axes(Qt::Vertical).at(0) << ay << ay->max();
+            valueAxis->setMax( ui->maxValueAxisSpinBox->value() );
+            valueAxis->setMin( ui->minValueAxisSpinBox->value() );
+        }
     }
     else
     {
         chart->setAxisY(axis, series);
+
+        if(!ui->autoScaleValueAxisCheckBox->isChecked())
+        {
+            QAbstractAxis *aValueAxis = chart->axes(Qt::Horizontal).at(0);
+            QValueAxis  *valueAxis = qobject_cast<QValueAxis *>( aValueAxis );
+//            qDebug() << chart->axes(Qt::Vertical).at(0) << ay << ay->max();
+            valueAxis->setMax( ui->maxValueAxisSpinBox->value() );
+            valueAxis->setMin( ui->minValueAxisSpinBox->value() );
+        }
     }
 
     chart->axisX()->setTitleText( ui->nameXaxis->text() );
     chart->axisY()->setTitleText( ui->nameYaxis->text() );
+
+
 
 
     //Legend settings
@@ -261,6 +286,9 @@ void BarGraph::plot()
     tFont.setBold( true );
     chart->setTitleFont( tFont );
 
+
+
+
 }
 
 void BarGraph::updateDetachedLegendLayout()
@@ -300,6 +328,10 @@ void BarGraph::xmlStream(QXmlStreamWriter *writer)
     writer->writeTextElement("labels_angle", QString::number(ui->labelAngleSpinBox->value()) );
     writer->writeTextElement("labels_position", QString::number(ui->labelPosComboBox->currentIndex()) );
     writer->writeTextElement("labels_format", ui->labelFormatEdit->text() );
+
+    writer->writeTextElement("auto_scale_value_axis", QString::number(ui->autoScaleValueAxisCheckBox->isChecked() ) );
+    writer->writeTextElement("min_scale_value_axis", QString::number(ui->minValueAxisSpinBox->value()) );
+    writer->writeTextElement("max_scale_value_axis", QString::number(ui->maxValueAxisSpinBox->value()) );
 
 
 }
@@ -347,6 +379,7 @@ void BarGraph::xmlParse(QXmlStreamReader *xml)
         if(xml->name() == "title")
         {
             QString str = xml->readElementText();
+            chart->setTitle( str );
             ui->titleEdit->setText(str);
 
             this->setWindowTitle(QString("%1 \t|\t ID: %2").arg(ui->titleEdit->text()).arg(ui->idEdit->text()));
@@ -489,6 +522,27 @@ void BarGraph::xmlParse(QXmlStreamReader *xml)
             ui->labelFormatEdit->setText( str );
         }
 
+        if(xml->name() == "auto_scale_value_axis")
+        {
+            int intVal = xml->readElementText().toInt();
+            if(intVal > 0)
+                ui->autoScaleValueAxisCheckBox->setCheckState( Qt::Checked );
+            else
+                ui->autoScaleValueAxisCheckBox->setCheckState( Qt::Unchecked );
+        }
+
+        if(xml->name() == "min_scale_value_axis")
+        {
+            double realVal = xml->readElementText().toDouble();
+            ui->minValueAxisSpinBox->setValue(realVal);
+        }
+
+        if(xml->name() == "max_scale_value_axis")
+        {
+            double realVal = xml->readElementText().toDouble();
+            ui->maxValueAxisSpinBox->setValue(realVal);
+        }
+
 
         /* ...and next... */
         xml->readNext();
@@ -544,6 +598,10 @@ void BarGraph::blockAllSignals(bool block)
     ui->labelAngleSpinBox->blockSignals(block);
     ui->labelFormatEdit->blockSignals(block);
     ui->labelPosComboBox->blockSignals(block);
+
+    ui->autoScaleValueAxisCheckBox->blockSignals(block);
+    ui->minValueAxisSpinBox->blockSignals(block);
+    ui->maxValueAxisSpinBox->blockSignals(block);
 }
 
 BarGraph::~BarGraph()
