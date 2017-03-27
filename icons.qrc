@@ -28,5 +28,6 @@
         <file>images/piechart.ico</file>
         <file>images/linechart.ico</file>
         <file>appicon.ico</file>
+        <file>images/edit-clear.png</file>
     </qresource>
 </RCC>

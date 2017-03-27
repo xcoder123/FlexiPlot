@@ -35,7 +35,7 @@ protected:
     bool eventFilter(QObject *obj, QEvent *e);
 
 signals:
-    packetSent(QByteArray packet);
+    void packetSent(QByteArray packet);
 
 private:
     Ui::DebugTools *ui;

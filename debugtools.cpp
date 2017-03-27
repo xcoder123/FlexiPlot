@@ -22,6 +22,8 @@ DebugTools::DebugTools(QWidget *parent) :
 
 
     loadHistory();
+
+    ui->historyListWidget->scrollToBottom();
 }
 
 void DebugTools::exampleItemSelected()

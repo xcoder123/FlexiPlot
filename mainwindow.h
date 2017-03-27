@@ -6,9 +6,6 @@
 #include <QMessageBox>
 #include <QTimer>
 
-#include <qwt_plot.h>
-#include <qwt_plot_curve.h>
-#include <qwt_legend.h>
 
 #include <QDebug>
 
@@ -20,9 +17,10 @@
 #include "aboutdialog.h"
 
 #include "widgets/abstractwidget.h"
-#include "widgets/linegraph.h"
+//#include "widgets/linegraph.h"
 #include "widgets/bargraph.h"
 #include "widgets/piechart.h"
+#include "widgets/linechart.h"
 //#include "mapper.h"
 
 namespace Ui {
@@ -54,6 +52,7 @@ private slots:
     void closeSerialPort();
 
     void addLineGraph();
+    void addLineChart();
     void addBarGraph();
     void addPieChart();
     void addMap();

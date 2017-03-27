@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>Line Chart</string>
   </property>
   <property name="windowIcon">
    <iconset resource="../icons.qrc">
@@ -122,7 +122,7 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>230</width>
+            <width>369</width>
             <height>678</height>
            </rect>
           </property>

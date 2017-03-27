@@ -1,7 +1,8 @@
 #ifndef HELPER_H
 #define HELPER_H
 
-#include "linegraph.h"
+//#include "linegraph.h"
+#include "linechart.h"
 #include "bargraph.h"
 #include "piechart.h"
 

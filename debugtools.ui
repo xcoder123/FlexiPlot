@@ -144,7 +144,7 @@
              </property>
              <property name="icon">
               <iconset resource="icons.qrc">
-               <normaloff>:/images/graph.png</normaloff>:/images/graph.png</iconset>
+               <normaloff>:/images/linechart.ico</normaloff>:/images/linechart.ico</iconset>
              </property>
              <item>
               <property name="text">
@@ -154,6 +154,16 @@
              <item>
               <property name="text">
                <string>{P0|Roll|255,0,0|25|Pitch|0,255,0|56}</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>{P0|Random|1 15 2 8 3 -6 4 15|Quadratic|-5 25 -4 16 -3 9 -2 4 -1 1 0 0 1 1 2 4 3 9 4 16 5 25}</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>{P0|Random|255,0,0|1 15 2 8 3 -6 4 15|Quadratic|0,255,0|-5 25 -4 16 -3 9 -2 4 -1 1 0 0 1 1 2 4 3 9 4 16 5 25}</string>
               </property>
              </item>
             </item>

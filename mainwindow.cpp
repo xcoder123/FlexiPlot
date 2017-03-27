@@ -8,7 +8,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    this->setWindowTitle( this->windowTitle() + " - " + QString::fromLocal8Bit( __DATE__ ) + " " + QString::fromLocal8Bit(__TIME__));
+    this->setWindowTitle( this->windowTitle() );
 
     serial = new QSerialPort(this);
 
@@ -17,7 +17,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionDisconnect, SIGNAL(triggered()), this, SLOT(closeSerialPort()));
 
 
-    connect(ui->actionAdd_Graph, SIGNAL(triggered()), this, SLOT(addLineGraph()));
+    connect(ui->actionAdd_Graph, SIGNAL(triggered()), this, SLOT(addLineChart()));
     connect(ui->actionAdd_Bar_Graph, SIGNAL(triggered(bool)), this, SLOT(addBarGraph()));
     connect(ui->actionAdd_Pie_Chart, SIGNAL(triggered(bool)), this, SLOT(addPieChart()));
     connect(ui->actionAdd_Map, SIGNAL(triggered()), this, SLOT(addMap()));
@@ -204,9 +204,9 @@ void MainWindow::openDash(QString fileName)
             if(xml.name() == "Widget")
             {
                 AbstractWidget* widget;
-                if( xml.attributes().value("type").toInt() == LineGraph::Type)
+                if( xml.attributes().value("type").toInt() == LineChart::Type)
                 {
-                    widget = new LineGraph(this);
+                    widget = new LineChart(this);
                 }
                 else if(xml.attributes().value("type").toInt() == BarGraph::Type)
                 {
@@ -413,7 +413,25 @@ void MainWindow::addLineGraph()
 
     Config::getInstance()->setUnsavedChanges(true);
 
-    LineGraph* plot = new LineGraph(this);
+    LineChart* plot = new LineChart(this);
+    plot->setId( QString("P%1").arg(widgets.size()) );
+    QMdiSubWindow *subWindow = ui->mdiArea->addSubWindow(plot);
+    subWindow->setWindowIcon( QIcon("://images/linechart.ico") );
+
+    plot->show();
+
+    connect(plot, SIGNAL(destroyed()), this, SLOT(deleteWidget()));
+
+    widgets.append(plot);
+
+}
+
+void MainWindow::addLineChart()
+{
+
+    Config::getInstance()->setUnsavedChanges(true);
+
+    LineChart* plot = new LineChart(this);
     plot->setId( QString("P%1").arg(widgets.size()) );
     QMdiSubWindow *subWindow = ui->mdiArea->addSubWindow(plot);
     subWindow->setWindowIcon( QIcon("://images/linechart.ico") );

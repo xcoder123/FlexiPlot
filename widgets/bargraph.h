@@ -31,7 +31,6 @@
 #include <QtCharts/QValueAxis>
 
 
-#include "plotitem.h"
 #include "config.h"
 #include "abstractwidget.h"
 
