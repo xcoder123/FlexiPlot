@@ -18,6 +18,8 @@ Terminal::Terminal(QWidget *parent) :
     connect(ui->clearBtn, SIGNAL(clicked(bool)), this, SLOT(clear()));
 
     loadHistory();
+
+    ui->sentCmdList->setCurrentRow( ui->sentCmdList->count() - 1 );
 }
 
 void Terminal::saveHistory()
@@ -50,7 +52,7 @@ void Terminal::clear()
 
 bool Terminal::eventFilter(QObject *obj, QEvent *e)
 {
-    if(obj = ui->cmdEdit)
+    if(obj == ui->cmdEdit)
     {
         if(e->type() == QEvent::KeyPress)
         {
@@ -106,7 +108,7 @@ void Terminal::sendInput()
     {
         case NL_END: dataToSend.append('\n'); break;
         case CR_END: dataToSend.append('\r'); break;
-        case BOTH_NL_CR_END: dataToSend.append('\n\r'); break;
+        case BOTH_NL_CR_END: dataToSend.append("\n\r"); break;
         default /*NO_END*/: break;
     }
 
