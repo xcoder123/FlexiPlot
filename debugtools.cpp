@@ -24,6 +24,7 @@ DebugTools::DebugTools(QWidget *parent) :
     loadHistory();
 
     ui->historyListWidget->scrollToBottom();
+    ui->historyListWidget->setCurrentRow( ui->historyListWidget->count() - 1 );
 }
 
 void DebugTools::exampleItemSelected()
@@ -65,7 +66,7 @@ void DebugTools::clear()
 
 bool DebugTools::eventFilter(QObject *obj, QEvent *e)
 {
-    if(obj = ui->packetLineEdit)
+    if(obj == ui->packetLineEdit)
     {
         if(e->type() == QEvent::KeyPress)
         {
