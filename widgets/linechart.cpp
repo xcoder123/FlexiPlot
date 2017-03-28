@@ -189,6 +189,16 @@ void LineChart::serialPacket(QStringList packet)
            series->attachAxis( axisX );
            series->attachAxis( axisY );
 
+           foreach(QLegendMarker* marker, chart->legend()->markers())
+           {
+               disconnect(marker, SIGNAL(clicked()), this, SLOT(legendMarkerClicked()));
+               disconnect(marker, SIGNAL(hovered(bool)), this, SLOT(legendMarkerHovered(bool)));
+
+               connect(marker, SIGNAL(clicked()), this, SLOT(legendMarkerClicked()));
+               connect(marker, SIGNAL(hovered(bool)), this, SLOT(legendMarkerHovered(bool)));
+           }
+
+
            LineChartPlotItem* plotItem = new LineChartPlotItem(series, packet[i]);
 
            if(ui->typeComboBox->currentIndex() == PLOT_TIME)
@@ -271,8 +281,10 @@ void LineChart::plot()
 
     //    qDebug() << (qint64)minMaxGraphValues.maxValues.x() << (qint64)minMaxGraphValues.minValues.x() << chart->plotArea();
 
-    if(ui->autoScaleXCheckBox->isChecked() || ui->typeComboBox->currentIndex() == PLOT_TIME)
+    if(ui->autoScaleXCheckBox->isChecked() && ui->typeComboBox->currentIndex() == PLOT_XY)
         chart->axisX()->setRange( minMaxGraphValues.minValues.x(), minMaxGraphValues.maxValues.x()  );
+    else if(ui->typeComboBox->currentIndex() == PLOT_TIME)
+        chart->axisX()->setRange( 0, ui->bufferSpin->value()  );
     else
         chart->axisX()->setRange( ui->minXSpin->value(),  ui->maxXSpin->value()  );
 
@@ -292,6 +304,10 @@ line_plot_max_min_values_t LineChart::getMaxMinValues()
     foreach(QString key, items.keys())
     {
         LineChartPlotItem * item = items[key];
+
+        if(!item->series()->isVisible())
+            continue;
+
         QPointF itemMaxValues = item->maxValues();
 
         if(maxValues.isNull())
@@ -327,6 +343,62 @@ line_plot_max_min_values_t LineChart::getMaxMinValues()
     result.maxValues = maxValues;
 
     return result;
+}
+
+void LineChart::legendMarkerHovered(bool hovering)
+{
+    if(hovering)
+        this->setCursor(Qt::PointingHandCursor);
+    else
+        this->setCursor(Qt::ArrowCursor);
+}
+
+void LineChart::legendMarkerClicked()
+{
+    QLegendMarker* marker = qobject_cast<QLegendMarker*>(QObject::sender());
+    Q_ASSERT(marker);
+
+    switch(marker->type())
+    {
+        case QLegendMarker::LegendMarkerTypeXY:
+        {
+            // Toggle visibility of series
+            marker->series()->setVisible(!marker->series()->isVisible());
+
+            // Turn legend marker back to visible, since hiding series also hides the marker
+            // and we don't want it to happen now.
+            marker->setVisible(true);
+
+            // Dim the marker, if series is not visible
+            qreal alpha = 1.0;
+
+            if (!marker->series()->isVisible()) {
+                alpha = 0.5;
+            }
+
+            QColor color;
+            QBrush brush = marker->labelBrush();
+            color = brush.color();
+            color.setAlphaF(alpha);
+            brush.setColor(color);
+            marker->setLabelBrush(brush);
+
+            brush = marker->brush();
+            color = brush.color();
+            color.setAlphaF(alpha);
+            brush.setColor(color);
+            marker->setBrush(brush);
+
+            QPen pen = marker->pen();
+            color = pen.color();
+            color.setAlphaF(alpha);
+            pen.setColor(color);
+            marker->setPen(pen);
+
+            break;
+        }
+        default: qDebug() << "Unknown marker"; break;
+    }
 }
 
 void LineChart::xmlStream(QXmlStreamWriter *writer)
@@ -927,9 +999,16 @@ void LineChartPlotItem::addData(QPointF p)
     }
     else
     {
-        if (points.count() < m_samplingSize) {
-            points.push_back( p );
-        } else {
+        if (points.count() < m_samplingSize)
+        {
+            //This is fine, but it is faster for QtCharts to render if we don't have large numbers
+            //sine RT line chart can't have nice timestamp, there is no reason not to alter X with sample index
+//            points.push_back( p );
+
+            points.push_back( QPointF(points.length(), p.y()) );
+        }
+        else
+        {
             QVector<QPointF> newPoints;
             for (int i = 0; i < points.count()-1; i++)
                 newPoints.append(QPointF(i, points.at(i+1).y()));

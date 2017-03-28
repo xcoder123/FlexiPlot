@@ -29,5 +29,6 @@
         <file>images/linechart.ico</file>
         <file>appicon.ico</file>
         <file>images/edit-clear.png</file>
+        <file>images/document-open-recent.png</file>
     </qresource>
 </RCC>

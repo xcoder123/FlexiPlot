@@ -95,6 +95,9 @@ private slots:
     void savePlot();
     void blockAllSignals(bool block);
 
+    void legendMarkerClicked();
+    void legendMarkerHovered(bool hovering);
+
 private:
     Ui::LineChart *ui;
     QString id;

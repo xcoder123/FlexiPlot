@@ -35,6 +35,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(Config::getInstance(), SIGNAL(savedStatusChanged(bool)), this, SLOT(unsavedChanges(bool)));
 
+    constructRecentFilesMenu();
+    connect(ui->actionClear_Menu, SIGNAL(triggered(bool)), this, SLOT(clearRecentFilesMenu()));
+
     settings = new Settings(this);
     connect(settings, SIGNAL(settingsChanged()), this, SLOT(settingsChanged()));
 
@@ -139,7 +142,7 @@ void MainWindow::openDashDialog()
 {
     if(Config::getInstance()->getUnsavedChanges())
     {
-        int reply = QMessageBox::question(this, "Are you sure?", "Any unsaved changes will be lost!\nDo you wish to continue?",
+        int reply = QMessageBox::question(this, tr("Are you sure?"), tr("Any unsaved changes will be lost!\nDo you wish to continue?"),
                                              QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel, QMessageBox::Save );
 
         if(reply == QMessageBox::Cancel)
@@ -250,7 +253,7 @@ void MainWindow::openDash(QString fileName)
     lockStateChanged(isMovable);
 
 
-
+    addToRecentFiles( fileName );
 }
 
 void MainWindow::saveAs()
@@ -269,9 +272,16 @@ void MainWindow::saveAs()
                                                             tr("FlexiPlot DASH file (*.dash);;All Files (*)") );
 
 
+    if(fileName.isEmpty())
+        return;
+
     qDebug() << "Saving in: " << fileName;
 
     QFileInfo fileInfo(fileName);
+    //This is for you Ubuntu, wth, why wouldn't you add it automatically?
+    if(fileInfo.suffix() != "dash")
+        fileName.append(".dash");
+
     settings.setValue( "last_path", fileInfo.dir().absolutePath() );
 
     saveDash(fileName);
@@ -301,9 +311,17 @@ void MainWindow::normalSave()
                                                             tr("FlexiPlot DASH file (*.dash);;All Files (*)") );
     }
 
+    if(fileName.isEmpty())
+        return;
+
     qDebug() << "Saving in: " << fileName;
 
     QFileInfo fileInfo(fileName);
+
+    //This is for you Ubuntu, wth, why wouldn't you add it automatically?
+    if(fileInfo.suffix() != "dash")
+        fileName.append(".dash");
+
     settings.setValue( "last_path", fileInfo.dir().absolutePath() );
 
     saveDash(fileName);
@@ -358,6 +376,93 @@ void MainWindow::saveDash(QString fileName)
     Config::getInstance()->setCurrentOpenedFile(fileName);
 
 
+    addToRecentFiles(fileName);
+}
+
+void MainWindow::addToRecentFiles(QString fileName)
+{
+    if(recentFiles.contains( fileName ))
+    {
+       recentFiles.removeAll( fileName );
+    }
+
+    recentFiles.push_front( fileName );
+
+    if(recentFiles.length() > MAX_RECENT_OPEN_MENU_ENTRIES)
+        recentFiles.pop_back();
+
+    QSettings settings;
+    settings.setValue( "recent_files", recentFiles );
+
+    constructRecentFilesMenu();
+}
+
+void MainWindow::clearRecentFilesMenu()
+{
+    int reply = QMessageBox::question(this, tr("Are you sure?"), tr("Are you sure you wish to clear recently opened file list?"),
+                                         QMessageBox::Yes | QMessageBox::No );
+
+    if(reply == QMessageBox::No)
+        return;
+
+    if(reply == QMessageBox::Yes)
+    {
+        QSettings settings;
+        settings.setValue( "recent_files", QStringList() );
+        constructRecentFilesMenu();
+    }
+}
+
+void MainWindow::constructRecentFilesMenu()
+{
+    foreach(QAction * action, ui->menuOpen_Recent->actions() )
+    {
+        //Technically we should stop deleting any menu items when we encounter the empty action
+        if(action == ui->action_empty )
+            break;
+
+        delete action;
+
+    }
+
+    recentFiles.clear();
+
+    QSettings settings;
+    recentFiles = settings.value("recent_files", QStringList()).toStringList();
+
+//    qDebug() << recentFiles;
+
+    ui->action_empty->setVisible(recentFiles.isEmpty());
+
+    foreach(QString fileName, recentFiles)
+    {
+        QAction * fileAction = new QAction(fileName);
+        connect(fileAction, SIGNAL(triggered(bool)), this, SLOT(recentFileMenuItemClicked()));
+        ui->menuOpen_Recent->insertAction( ui->action_empty, fileAction );
+    }
+}
+
+void MainWindow::recentFileMenuItemClicked()
+{
+    QObject* obj = QObject::sender();
+
+    QAction * action = qobject_cast<QAction*>(obj);
+
+    if(Config::getInstance()->getUnsavedChanges())
+    {
+        int reply = QMessageBox::question(this, tr("Are you sure?"), tr("Any unsaved changes will be lost!\nDo you wish to continue?"),
+                                             QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel, QMessageBox::Save );
+
+        if(reply == QMessageBox::Cancel)
+            return;
+
+        if(reply == QMessageBox::Save)
+        {
+            normalSave();
+        }
+    }
+
+    openDash( action->text() );
 
 }
 
@@ -365,7 +470,7 @@ void MainWindow::newDash()
 {
     if(Config::getInstance()->getUnsavedChanges())
     {
-        int reply = QMessageBox::question(this, "Are you sure?", "Any unsaved changes will be lost!\nDo you wish to continue?",
+        int reply = QMessageBox::question(this, tr("Are you sure?"), tr("Any unsaved changes will be lost!\nDo you wish to continue?"),
                                              QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel, QMessageBox::Save );
 
         if(reply == QMessageBox::Cancel)

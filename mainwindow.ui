@@ -47,8 +47,21 @@
     <property name="title">
      <string>File</string>
     </property>
+    <widget class="QMenu" name="menuOpen_Recent">
+     <property name="title">
+      <string>Open Recent</string>
+     </property>
+     <property name="icon">
+      <iconset resource="icons.qrc">
+       <normaloff>:/images/document-open-recent.png</normaloff>:/images/document-open-recent.png</iconset>
+     </property>
+     <addaction name="action_empty"/>
+     <addaction name="separator"/>
+     <addaction name="actionClear_Menu"/>
+    </widget>
     <addaction name="actionNew"/>
     <addaction name="actionOpen"/>
+    <addaction name="menuOpen_Recent"/>
     <addaction name="actionSave"/>
     <addaction name="actionSave_AS"/>
     <addaction name="separator"/>
@@ -316,6 +329,19 @@
    </property>
    <property name="text">
     <string>Add Pie Chart</string>
+   </property>
+  </action>
+  <action name="actionClear_Menu">
+   <property name="text">
+    <string>Clear Menu</string>
+   </property>
+  </action>
+  <action name="action_empty">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>(empty)</string>
    </property>
   </action>
  </widget>

@@ -1,6 +1,8 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#define MAX_RECENT_OPEN_MENU_ENTRIES        10
+
 #include <QMainWindow>
 #include <QSerialPort>
 #include <QMessageBox>
@@ -76,6 +78,13 @@ private slots:
 
     void lockStateChanged(bool checked);
 
+    void addToRecentFiles(QString fileName);
+    void recentFileMenuItemClicked();
+    void clearRecentFilesMenu();
+
+private:
+    void constructRecentFilesMenu();
+
 
 protected:
     void closeEvent(QCloseEvent * e);
@@ -99,6 +108,8 @@ private:
     QComboBox * serialPortComboBox;
 
     AboutDialog about;
+
+    QStringList recentFiles;
 };
 
 #endif // MAINWINDOW_H
