@@ -719,12 +719,21 @@ void MainWindow::parseData(QByteArray data)
         // or should we just see if we can find id number, and let the widget to validate it once.
         // regex is still computationally expensive
         //-----------------------------------------------------------------------------------------------------
-        if(!Helper::validPacket(tempStr))
+        /*if(!Helper::validPacket(tempStr))
         {
             packetsDropped++;
             qDebug() << "Packets dropped: " << packetsDropped;
             return;
 //            break;
+        }*/
+
+        //New way is to just check if we can get ID, and then let the corresponding widget if found to check if it is valid or not
+        QRegExp basicValidation("[a-zA-Z0-9]+\\|(.| )+");
+        if(!basicValidation.exactMatch(tempStr))
+        {
+            packetsDropped++;
+            qDebug() << "Packets dropped: " << packetsDropped;
+            return;
         }
 
         QStringList cmd = tempStr.split("|");
