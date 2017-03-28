@@ -111,6 +111,7 @@ bool BarGraph::validPacket(QString packet)
     QRegExp fullPacket("[a-zA-Z0-9]+\\|[a-zA-Z0-9 \\;]+(\\|[a-zA-Z0-9 ]+\\|\\d{1,3},\\d{1,3},\\d{1,3}\\|(\\-*\\d+(\\.{0,1}\\d+)*\\s?)*)+");
     QRegExp noColorPacket("[a-zA-Z0-9]+\\|[a-zA-Z0-9 \\;]+(\\|[a-zA-Z0-9 ]+\\|(\\-*\\d+(\\.{0,1}\\d+)*\\s?)*)+");
 
+//    qDebug() << fullPacket.exactMatch(packet) << noColorPacket.exactMatch( packet );
 
     return fullPacket.exactMatch(packet) || noColorPacket.exactMatch( packet );
 }

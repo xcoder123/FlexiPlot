@@ -96,7 +96,7 @@ void PieChart::reset()
 
 void PieChart::serialPacket(QStringList packet)
 {
-    qDebug() << packet;
+//    qDebug() << packet;
 
     items.clear();
 

@@ -55,7 +55,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionTerminal, SIGNAL(triggered(bool)), terminal, SLOT(show()));
     connect(terminal, SIGNAL(writeToSerial(QByteArray)), this, SLOT(sendData(QByteArray)));
 
-    QLabel * serialLabel = new QLabel("   Port: ", this);
+    QLabel * serialLabel = new QLabel(tr("   Port: "), this);
     ui->mainToolBar->insertWidget( ui->actionConnect, serialLabel );
     serialPortComboBox = new QComboBox(this);
     serialPortComboBox->setEditable(true);
@@ -66,7 +66,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
 
-    QLabel * baudrateLabel = new QLabel("   Baudrate: ", this);
+    QLabel * baudrateLabel = new QLabel(tr("   Baudrate: "), this);
     ui->mainToolBar->insertWidget( ui->actionConnect, baudrateLabel );
     baudrateComboBox = new QComboBox(this);
     baudrateComboBox->setEditable(true);
@@ -221,7 +221,7 @@ void MainWindow::openDash(QString fileName)
                 }
                 else
                 {
-                    QMessageBox::critical(this, "Error", "Unknown widget type. Dash file might be of old version or corrupted");
+                    QMessageBox::critical(this, tr("Error"), tr("Unknown widget type. Dash file might be of old version or corrupted"));
                     return;
                 }
 
@@ -631,7 +631,7 @@ void MainWindow::openSerialPort()
 
                 )
         {
-            ui->statusBar->showMessage("Connected");
+            ui->statusBar->showMessage(tr("Connected"));
 
             ui->actionConnect->setEnabled( false );
             ui->actionDisconnect->setEnabled( true );
@@ -713,6 +713,12 @@ void MainWindow::parseData(QByteArray data)
 //        QRegExp rx_timeplot("[a-zA-Z0-9]+(\\|[a-zA-Z0-9 ]+\\|\\d{1,3},\\d{1,3},\\d{1,3}\\|\\-*\\d+(\\.{0,1}\\d+)*)+");
 //        QRegExp rx_xy_plot("[a-zA-Z0-9]+\\|[a-zA-Z0-9 ]+\\|\\d{1,3},\\d{1,3},\\d{1,3}\\|(\\-*\\d+\\s\\-*\\d+\\s*)+");
 //        if(!LineGraph::validPacket(tempStr))
+
+        //-----------------------------------------------------------------------------------------------------
+        // Just a thought, do we really need to validate all the packet with all the permutations
+        // or should we just see if we can find id number, and let the widget to validate it once.
+        // regex is still computationally expensive
+        //-----------------------------------------------------------------------------------------------------
         if(!Helper::validPacket(tempStr))
         {
             packetsDropped++;
@@ -727,7 +733,7 @@ void MainWindow::parseData(QByteArray data)
 
         foreach(AbstractWidget* plot, widgets)
         {
-            if(plot->getId() == cmd[0])
+            if(plot->getId() == cmd[0] && Helper::validPacket(tempStr, plot->type()) )
                 plot->serialPacket( cmd );
         }
 
