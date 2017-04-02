@@ -91,7 +91,8 @@ bool PieChart::validPacket(QString packet)
 
 void PieChart::reset()
 {
-
+    items.clear();
+    chart->removeAllSeries();
 }
 
 void PieChart::serialPacket(QStringList packet)
@@ -125,6 +126,8 @@ void PieChart::serialPacket(QStringList packet)
             item.value = packet[i+1].toDouble();
             i += 1;
         }
+
+        item.name = QString("%1 (%2)").arg( item.name ).arg(item.value);
 
         items.append( item );
 
