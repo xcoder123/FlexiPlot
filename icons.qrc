@@ -30,5 +30,6 @@
         <file>appicon.ico</file>
         <file>images/edit-clear.png</file>
         <file>images/document-open-recent.png</file>
+        <file>images/scatter.png</file>
     </qresource>
 </RCC>

@@ -83,6 +83,7 @@
     <addaction name="actionAdd_Graph"/>
     <addaction name="actionAdd_Bar_Graph"/>
     <addaction name="actionAdd_Pie_Chart"/>
+    <addaction name="actionAdd_Scatter_Chart"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -129,6 +130,7 @@
    <addaction name="actionAdd_Graph"/>
    <addaction name="actionAdd_Bar_Graph"/>
    <addaction name="actionAdd_Pie_Chart"/>
+   <addaction name="actionAdd_Scatter_Chart"/>
    <addaction name="separator"/>
    <addaction name="actionLockWidgets"/>
    <addaction name="actionSettings"/>
@@ -191,7 +193,7 @@
     <string>Add Line Chart</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl++, Ctrl+=</string>
+    <string>Ctrl+1</string>
    </property>
   </action>
   <action name="actionAbout">
@@ -256,6 +258,9 @@
    <property name="text">
     <string>Cascade</string>
    </property>
+   <property name="shortcut">
+    <string>Alt+C</string>
+   </property>
   </action>
   <action name="actionTile">
    <property name="icon">
@@ -264,6 +269,9 @@
    </property>
    <property name="text">
     <string>Tile</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+T</string>
    </property>
   </action>
   <action name="actionAdd_Map">
@@ -295,6 +303,9 @@
    <property name="text">
     <string>Add Bar Graph</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+2</string>
+   </property>
   </action>
   <action name="actionLockWidgets">
    <property name="checkable">
@@ -316,6 +327,9 @@
    <property name="statusTip">
     <string>If checked allows graphs to be moved around. Uncheck to fix them in a position</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+L</string>
+   </property>
   </action>
   <action name="actionDebug_Tools">
    <property name="text">
@@ -330,6 +344,9 @@
    <property name="text">
     <string>Add Pie Chart</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+3</string>
+   </property>
   </action>
   <action name="actionClear_Menu">
    <property name="text">
@@ -342,6 +359,18 @@
    </property>
    <property name="text">
     <string>(empty)</string>
+   </property>
+  </action>
+  <action name="actionAdd_Scatter_Chart">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/images/scatter.png</normaloff>:/images/scatter.png</iconset>
+   </property>
+   <property name="text">
+    <string>Add Scatter Chart</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+4</string>
    </property>
   </action>
  </widget>

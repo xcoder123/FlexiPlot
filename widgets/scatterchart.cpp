@@ -1,43 +1,40 @@
-#include "linechart.h"
-#include "ui_linechart.h"
+#include "scatterchart.h"
+#include "ui_scatterchart.h"
 
-LineChart::LineChart(QWidget *parent) :
+ScatterChart::ScatterChart(QWidget *parent) :
     AbstractWidget(parent),
-    ui(new Ui::LineChart)
+    ui(new Ui::ScatterChart)
 {
     ui->setupUi(this);
 
     doPlotting = true;
 
-    autoWriteFile = NULL;
-
     chart = new QChart();
+
+
+//    chart->setDropShadowEnabled(true);
+
     chart->setTitle( ui->titleEdit->text() );
     QFont tFont = chart->titleFont();
     tFont.setPointSizeF( 15 );
     tFont.setBold( true );
     chart->setTitleFont( tFont );
 
+    chart->setAnimationOptions(QChart::NoAnimation);
 
-    axisX = new QValueAxis;
-    axisX->setTickCount(10);
-    axisX->setLabelFormat("%d");
-    axisX->setTitleText("Samples");
-    axisX->setLabelsVisible(true);
 
-//    dateAxisX = new QDateTimeAxis;
-//    dateAxisX->setTickCount(10);
-//    dateAxisX->setFormat("h:m:s");
-//    dateAxisX->setTitleText("Time");
 
-    axisY = new QValueAxis;
-    axisY->setRange(-1, 1);    
-    chart->setAxisX(axisX);
-    chart->setAxisY(axisY);
+    QValueAxis * axisX = new QValueAxis();
+    QValueAxis * axisY = new QValueAxis();
+    chart->setAxisX( axisX );
+    chart->setAxisY( axisY );
 
+    chart->legend()->setVisible(true);
+    chart->legend()->setAlignment(Qt::AlignBottom);
 
     ui->chartView->setChart( chart );
     ui->chartView->setRenderHint(QPainter::Antialiasing);
+
 
     this->setWindowTitle(ui->titleEdit->text());
 
@@ -50,9 +47,14 @@ LineChart::LineChart(QWidget *parent) :
     connect(ui->nameXaxis, SIGNAL(textEdited(QString)), this, SLOT(settingsChanged()));
     connect(ui->nameYaxis, SIGNAL(textEdited(QString)), this, SLOT(settingsChanged()));
 
+    connect(ui->markerComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(markerPropertiesChanged()));
+    connect(ui->markerSizeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(markerPropertiesChanged()));
+    connect(ui->bufferSpin, SIGNAL(valueChanged(int)), this, SLOT(samplingSizeChanged(int)));
+
     connect(ui->animationComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(settingsChanged()));
     connect(ui->themeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(settingsChanged()));
     connect(ui->antialiasingCheckBox, SIGNAL(stateChanged(int)), this, SLOT(settingsChanged()));
+    connect(ui->useOpenGLCheckBox, SIGNAL(stateChanged(int)), this, SLOT(openGlStateChanged()));
 
     ui->legendDetachedParamGroup->setVisible(false);
     connect(ui->legendShowCheckBox, SIGNAL(stateChanged(int)), this, SLOT(settingsChanged()));
@@ -67,71 +69,39 @@ LineChart::LineChart(QWidget *parent) :
     connect(ui->legendWidthSpinBox, SIGNAL(valueChanged(double)), this, SLOT(settingsChanged()));
     connect(ui->legendHeightSpinBox, SIGNAL(valueChanged(double)), this, SLOT(settingsChanged()));
 
-
-
-    connect(ui->bufferSpin, SIGNAL(valueChanged(int)), this, SLOT(samplingSizeChanged(int)));
-    connect(ui->refreshRateSpin, SIGNAL(valueChanged(int)), this, SLOT(refreshRateChanged(int)));
-
-
     connect(ui->xAxisTickCountSpinBox, SIGNAL(valueChanged(int)), this, SLOT(settingsChanged()));
     connect(ui->yAxisTickCountSpinBox, SIGNAL(valueChanged(int)), this, SLOT(settingsChanged()));
 
-    connect(ui->openForWriteBtn, SIGNAL(clicked(bool)), this, SLOT(setFileForWriting()));
-    connect(ui->writeToFileCheckBox, SIGNAL(clicked(bool)), this, SLOT(startStopAutoWriting(bool)));
-
-    timer = new QTimer(this);
-    timer->setInterval(50);
-    timer->start();
-    connect(timer, SIGNAL(timeout()), this, SLOT(plot()));
 
 }
 
-bool LineChart::validPacket(QString packet)
+bool ScatterChart::validPacket(QString packet)
 {
+   /*
+    * Regular expression for XY scatter plot
+    * Color test case:
+    *              P0|Random|255,0,0|1 255 2 200 3 150 4 100|Quadratic|0,255,0|-5 25 -4 16 -3 9 -2 4 -1 1 0 0 1 1 2 4 3 9 4 16 5 25
+    *
+    * Regexp:
+    *              [a-zA-Z0-9]+(\|[a-zA-Z0-9 ]+\|\d{1,3},\d{1,3},\d{1,3}\|(\-*\d+(\.{0,1}\d+)*\s?)*)+
+    *
+    *
+    * No Color Test Cases:
+    *             P0|Random|1 255 2 200 3 150 4 100|Quadratic|-5 25 -4 16 -3 9 -2 4 -1 1 0 0 1 1 2 4 3 9 4 16 5 25
+    *
+    * Regexp:
+    *             [a-zA-Z0-9]+(\|[a-zA-Z0-9 ]+\|(\-*\d+(\.{0,1}\d+)*\s?)*)+
+    *
+    */
 
-    /* Regular expresion for real time plotting:
-     * Color Test cases:
-     *             P0|X|255,0,0|100|Y|0,255,0|150|Z|0,0,255|200
-     *
-     * Regexp:
-     *             [a-zA-Z0-9]+(\|[a-zA-Z0-9 ]+\|\d{1,3},\d{1,3},\d{1,3}\|(\-*\d+(\.{0,1}\d+)*)*)+
-     *
-     *
-     * No Color Test Cases:
-     *              P0|X|100|Y|150|Z|200
-     *
-     * Regexp:
-     *              [a-zA-Z0-9]+(\|[a-zA-Z0-9 ]+\|(\-*\d+(\.{0,1}\d+)*)*)+
-     *
-     *
-     *
-     *
-     * Regular expression for XY plot
-     * Color test case:
-     *              P0|Random|255,0,0|1 255 2 200 3 150 4 100|Quadratic|0,255,0|-5 25 -4 16 -3 9 -2 4 -1 1 0 0 1 1 2 4 3 9 4 16 5 25
-     *
-     * Regexp:
-     *              [a-zA-Z0-9]+(\|[a-zA-Z0-9 ]+\|\d{1,3},\d{1,3},\d{1,3}\|(\-*\d+(\.{0,1}\d+)*\s?)*)+
-     *
-     *
-     * No Color Test Cases:
-     *             P0|Random|1 255 2 200 3 150 4 100|Quadratic|-5 25 -4 16 -3 9 -2 4 -1 1 0 0 1 1 2 4 3 9 4 16 5 25
-     *
-     * Regexp:
-     *             [a-zA-Z0-9]+(\|[a-zA-Z0-9 ]+\|(\-*\d+(\.{0,1}\d+)*\s?)*)+
-     *
-     */
+    QRegExp fullPacket("[a-zA-Z0-9]+(\\|[a-zA-Z0-9 ]+\\|\\d{1,3},\\d{1,3},\\d{1,3}\\|(\\-*\\d+(\\.{0,1}\\d+)*\\s?)*)+");
+    QRegExp noColorPacket("[a-zA-Z0-9]+(\\|[a-zA-Z0-9 ]+\\|(\\-*\\d+(\\.{0,1}\\d+)*\\s?)*)+");
 
-    QRegExp rtFullPacket("[a-zA-Z0-9]+(\\|[a-zA-Z0-9 ]+\\|\\d{1,3},\\d{1,3},\\d{1,3}\\|(\\-*\\d+(\\.{0,1}\\d+)*)*)+");
-    QRegExp rtNoColorPacket("[a-zA-Z0-9]+(\\|[a-zA-Z0-9 ]+\\|(\\-*\\d+(\\.{0,1}\\d+)*)*)+");
-    QRegExp xyFullPacket("[a-zA-Z0-9]+(\\|[a-zA-Z0-9 ]+\\|\\d{1,3},\\d{1,3},\\d{1,3}\\|(\\-*\\d+(\\.{0,1}\\d+)*\\s?)*)+");
-    QRegExp xyNoColorPacket("[a-zA-Z0-9]+(\\|[a-zA-Z0-9 ]+\\|(\\-*\\d+(\\.{0,1}\\d+)*\\s?)*)+");
-
-    return rtFullPacket.exactMatch(packet) || rtNoColorPacket.exactMatch(packet) ||
-            xyFullPacket.exactMatch(packet) || xyNoColorPacket.exactMatch(packet);
+//    qDebug() << fullPacket.exactMatch(packet) << noColorPacket.exactMatch(packet);
+    return fullPacket.exactMatch(packet) || noColorPacket.exactMatch(packet);
 }
 
-void LineChart::reset()
+void ScatterChart::reset()
 {
     foreach(QString key, items.keys())
         delete items.value(key);
@@ -140,72 +110,43 @@ void LineChart::reset()
     chart->removeAllSeries();
 }
 
-
-void LineChart::clear()
+void ScatterChart::clear()
 {
     reset();
 }
 
-/*! IMPORTANT EXCERPT FROM DOCUMENTATION
- *
- * Note: A newly added series is attached to no axes by default, including any axes that were created
- * for the chart using createDefaultAxes() before the series was added to the chart. If no axes are
- * attached to the newly added series before the chart is shown, the series will get drawn as if it
- * had axes with ranges that exactly fit the series to the plot area of the chart. This can be
- * confusing if the same chart also displays other series that have properly attached axes, so always
- * make sure you either call createDefaultAxes() after a series has been added or explicitly attach axes
- * for the series.
- */
-void LineChart::serialPacket(QStringList packet)
+void ScatterChart::serialPacket(QStringList packet)
 {
-
     if(doPlotting == false)
         return;
 
-    if(ui->typeComboBox->currentIndex() == PLOT_XY)
-    {
-        reset();
-    }
-
-
-    //This here is only applicable to RT plot. Unfortunatelly, I can't pass 64bit epoch for nice timestamp yet.
-    //It is due to limitation in OpenGL and Qt. OpenGL by default only supports 32bit floats, and Qt hasn't implemented
-    //a "simulated" double float or is not using GL version 4+.
-//    qint64 currentMillis = QDateTime::currentMSecsSinceEpoch();
-    static qint64 currentPointIndex = 0;
-    currentPointIndex++;
-
-    bool autoWriteSkipFirstSeperator = true; //Used to skip adding sperator for first value
-
     for(int i=1; i<packet.length(); i++)
     {
-
-        QLineSeries * series = NULL;
+        QScatterSeries * series = NULL;
         if(!items.keys().contains(packet[i])) //does it have the current item?
         {
-           series =  new QLineSeries();
-           series->setUseOpenGL(true);
+           series =  new QScatterSeries();
+           series->setMarkerShape((QScatterSeries::MarkerShape)ui->markerComboBox->currentIndex());
+           series->setMarkerSize(ui->markerSizeSpinBox->value());
+           series->setUseOpenGL(ui->useOpenGLCheckBox->isChecked());
            chart->addSeries( series );
-           series->attachAxis( axisX );
-           series->attachAxis( axisY );
+           series->attachAxis( chart->axisX() );
+           series->attachAxis( chart->axisY() );
 
-           foreach(QLegendMarker* marker, chart->legend()->markers())
+           /*foreach(QLegendMarker* marker, chart->legend()->markers())
            {
                disconnect(marker, SIGNAL(clicked()), this, SLOT(legendMarkerClicked()));
                disconnect(marker, SIGNAL(hovered(bool)), this, SLOT(legendMarkerHovered(bool)));
 
                connect(marker, SIGNAL(clicked()), this, SLOT(legendMarkerClicked()));
                connect(marker, SIGNAL(hovered(bool)), this, SLOT(legendMarkerHovered(bool)));
-           }
+           }*/
 
 
-           XYChartPlotItem* plotItem = new XYChartPlotItem(series, packet[i]);
+           XYChartPlotItem* plotItem = new XYChartPlotItem(series, packet[i], XYChartPlotItem::UPDATE_INSTANTLY);
 
-           if(ui->typeComboBox->currentIndex() == PLOT_TIME)
-               plotItem->setSamplingSize( ui->bufferSpin->value() );
-           else
-               plotItem->setSamplingSize( -1 ); //-1 = no buffer, just add the damn point
 
+           plotItem->setSamplingSize(ui->bufferSpin->value());
            items.insert(packet[i], plotItem);
         }
 
@@ -232,46 +173,32 @@ void LineChart::serialPacket(QStringList packet)
 
 //        qDebug() << values;
 
-        for(int vI=0; vI<values.length(); vI += 2)
+        if(values.length() % 2 == 0)
         {
-            if(vI+1 >= values.length())
+            for(int vI=0; vI<values.length(); vI += 2)
             {
-//                qDebug() << "Adding RT point" << QPointF( (double)currentMillis, values.at(vI).toDouble() );
-                plotItem->addData( QPointF( (double)currentPointIndex, values.at(vI).toDouble() ) );
-            }
-            else
-            {
-//                qDebug() << "Adding XY point " << QPointF( values.at(vI).toDouble(), values.at(vI+1).toDouble() );
                 plotItem->addData( QPointF( values.at(vI).toDouble(), values.at(vI+1).toDouble() ) );
+//                qDebug() << QPointF( values.at(vI).toDouble(), values.at(vI+1).toDouble() );
             }
-
-            //Auto write to file the packet, if opened
-            if(autoWriteFile != NULL && autoWriteFile->isOpen() && ui->writeToFileCheckBox->isChecked())
-            {
-                if(autoWriteSkipFirstSeperator == false)
-                    autoWriteStream << ui->seperatorEdit->text();
-                else
-                    autoWriteSkipFirstSeperator = false;
-
-                autoWriteStream << plotItem->getData().last().x() << ui->seperatorEdit->text() << plotItem->getData().last().y();
-            }
-
         }
+        else
+        {
+            //Invalid packet, missing pairs.
+            qDebug() << "Invalid packet, missing pairs.";
+        }
+
     }
 
-    if(autoWriteFile != NULL && autoWriteFile->isOpen() && ui->writeToFileCheckBox->isChecked())
-    {
-        autoWriteStream << endl;
-    }
+    plot();
 }
 
-
-void LineChart::plot()
+void ScatterChart::plot()
 {
     foreach(QString key, items.keys())
     {
 //        qDebug() << key << items[key]->series()->useOpenGL() << items[key]->getData();
         items[key]->update();
+//        qDebug()<< qobject_cast<QScatterSeries*>(items[key]->series())->markerShape();
     }
 
 
@@ -281,10 +208,8 @@ void LineChart::plot()
 
     //    qDebug() << (qint64)minMaxGraphValues.maxValues.x() << (qint64)minMaxGraphValues.minValues.x() << chart->plotArea();
 
-    if(ui->autoScaleXCheckBox->isChecked() && ui->typeComboBox->currentIndex() == PLOT_XY)
+   if(ui->autoScaleXCheckBox->isChecked())
         chart->axisX()->setRange( minMaxGraphValues.minValues.x(), minMaxGraphValues.maxValues.x()  );
-    else if(ui->typeComboBox->currentIndex() == PLOT_TIME)
-        chart->axisX()->setRange( 0, ui->bufferSpin->value()  );
     else
         chart->axisX()->setRange( ui->minXSpin->value(),  ui->maxXSpin->value()  );
 
@@ -295,75 +220,18 @@ void LineChart::plot()
 
 }
 
-
-
-void LineChart::legendMarkerHovered(bool hovering)
-{
-    if(hovering)
-        this->setCursor(Qt::PointingHandCursor);
-    else
-        this->setCursor(Qt::ArrowCursor);
-}
-
-void LineChart::legendMarkerClicked()
-{
-    QLegendMarker* marker = qobject_cast<QLegendMarker*>(QObject::sender());
-    Q_ASSERT(marker);
-
-    switch(marker->type())
-    {
-        case QLegendMarker::LegendMarkerTypeXY:
-        {
-            // Toggle visibility of series
-            marker->series()->setVisible(!marker->series()->isVisible());
-
-            // Turn legend marker back to visible, since hiding series also hides the marker
-            // and we don't want it to happen now.
-            marker->setVisible(true);
-
-            // Dim the marker, if series is not visible
-            qreal alpha = 1.0;
-
-            if (!marker->series()->isVisible()) {
-                alpha = 0.5;
-            }
-
-            QColor color;
-            QBrush brush = marker->labelBrush();
-            color = brush.color();
-            color.setAlphaF(alpha);
-            brush.setColor(color);
-            marker->setLabelBrush(brush);
-
-            brush = marker->brush();
-            color = brush.color();
-            color.setAlphaF(alpha);
-            brush.setColor(color);
-            marker->setBrush(brush);
-
-            QPen pen = marker->pen();
-            color = pen.color();
-            color.setAlphaF(alpha);
-            pen.setColor(color);
-            marker->setPen(pen);
-
-            break;
-        }
-        default: qDebug() << "Unknown marker"; break;
-    }
-}
-
-void LineChart::xmlStream(QXmlStreamWriter *writer)
+void ScatterChart::xmlStream(QXmlStreamWriter *writer)
 {
     writer->writeTextElement("id", this->id);
     writer->writeTextElement("title", ui->titleEdit->text());
     writer->writeTextElement("xname", ui->nameXaxis->text());
     writer->writeTextElement("yname", ui->nameYaxis->text());
 
-    writer->writeTextElement("type", QString::number(ui->typeComboBox->currentIndex()));
+    writer->writeTextElement("marker_shape", QString::number(ui->markerComboBox->currentIndex()));
+    writer->writeTextElement("marker_size", QString::number(ui->markerSizeSpinBox->value()));
     writer->writeTextElement("buffer", QString::number(ui->bufferSpin->value()));
-    writer->writeTextElement("refresh_rate", QString::number(ui->refreshRateSpin->value()));
 
+    writer->writeTextElement("use_opengl", QString::number(ui->useOpenGLCheckBox->isChecked()) );
     writer->writeTextElement("animation", QString::number(ui->animationComboBox->currentIndex()) );
     writer->writeTextElement("theme", QString::number(ui->themeComboBox->currentIndex()) );
     writer->writeTextElement("antialiasing", QString::number(ui->antialiasingCheckBox->isChecked()) );
@@ -391,11 +259,10 @@ void LineChart::xmlStream(QXmlStreamWriter *writer)
     writer->writeTextElement("tick_count_x_axis", QString::number(ui->xAxisTickCountSpinBox->value()) );
     writer->writeTextElement("tick_count_y_axis", QString::number(ui->yAxisTickCountSpinBox->value()) );
 
-    writer->writeTextElement( "auto_write_file", ui->writeToFileEdit->text() );
     writer->writeTextElement( "auto_write_seperator", ui->seperatorEdit->text() );
 }
 
-void LineChart::xmlParse(QXmlStreamReader *xml)
+void ScatterChart::xmlParse(QXmlStreamReader *xml)
 {
     blockAllSignals(true);
     /* Let's check that we're really getting a person. */
@@ -455,10 +322,16 @@ void LineChart::xmlParse(QXmlStreamReader *xml)
             ui->nameYaxis->setText(str);
         }
 
-        if(xml->name() == "type")
+        if(xml->name() == "marker_shape")
         {
             int intVal = xml->readElementText().toInt();
-            ui->typeComboBox->setCurrentIndex(intVal);
+            ui->markerComboBox->setCurrentIndex( (QScatterSeries::MarkerShape)intVal );
+        }
+
+        if(xml->name() == "marker_size")
+        {
+            int intVal = xml->readElementText().toInt();
+            ui->markerSizeSpinBox->setValue( intVal );
         }
 
         if(xml->name() == "buffer")
@@ -467,10 +340,13 @@ void LineChart::xmlParse(QXmlStreamReader *xml)
             ui->bufferSpin->setValue(realVal);
         }
 
-        if(xml->name() == "refresh_rate")
+        if(xml->name() == "use_opengl")
         {
-            double realVal = xml->readElementText().toDouble();
-            ui->refreshRateSpin->setValue(realVal);
+            int intVal = xml->readElementText().toInt();
+            if(intVal > 0)
+                ui->useOpenGLCheckBox->setCheckState( Qt::Checked );
+            else
+                ui->useOpenGLCheckBox->setCheckState( Qt::Unchecked );
         }
 
         if(xml->name() == "animation")
@@ -620,9 +496,6 @@ void LineChart::xmlParse(QXmlStreamReader *xml)
         }
 
 
-        if(xml->name() == "auto_write_file")
-            ui->writeToFileEdit->setText(  xml->readElementText() );
-
         if(xml->name() == "auto_write_seperator")
             ui->seperatorEdit->setText(  xml->readElementText() );
 
@@ -632,17 +505,21 @@ void LineChart::xmlParse(QXmlStreamReader *xml)
     }
 
     blockAllSignals(false);
-    settingsChanged();
-    refreshRateChanged(ui->refreshRateSpin->value());
+
+    //openGlStateChanged() should also invoke: checkIfAnimationsAllowed and settingsChanged
+    openGlStateChanged();
+//    checkIfAnimationsAllowed();
+//    settingsChanged();
 }
 
-void LineChart::settingsChanged()
+void ScatterChart::settingsChanged()
 {
     qDebug() << "Settings changed by: " << QObject::sender();
     Config::getInstance()->setUnsavedChanges(true);
 
-    axisX->setTitleText( ui->nameXaxis->text() );
-    axisY->setTitleText( ui->nameYaxis->text() );
+    chart->axisX()->setTitleText( ui->nameXaxis->text() );
+    chart->axisY()->setTitleText( ui->nameYaxis->text() );
+
 
     chart->setAnimationOptions( (QChart::AnimationOption)ui->animationComboBox->currentIndex() );
     ui->chartView->setRenderHint(QPainter::Antialiasing, ui->antialiasingCheckBox->isChecked());
@@ -689,28 +566,13 @@ void LineChart::settingsChanged()
     lFont.setPointSizeF( ui->legendFontSizeSpinBox->value() );
     chart->legend()->setFont( lFont );
 
+    QValueAxis * axisX = qobject_cast<QValueAxis*>( chart->axisX() );
     axisX->setTickCount( ui->xAxisTickCountSpinBox->value() );
+    QValueAxis * axisY = qobject_cast<QValueAxis*>( chart->axisY() );
     axisY->setTickCount( ui->yAxisTickCountSpinBox->value() );
 }
 
-void LineChart::samplingSizeChanged(int value)
-{
-    foreach(QString key, items.keys())
-    {
-        items[key]->setSamplingSize( value );
-        items[key]->clear();
-    }
-
-}
-
-void LineChart::refreshRateChanged(int value)
-{
-    timer->stop();
-    timer->setInterval( value );
-    timer->start();
-}
-
-void LineChart::updateDetachedLegendLayout()
+void ScatterChart::updateDetachedLegendLayout()
 {
     chart->legend()->setGeometry(QRectF(  ui->legendHPosSpinBox->value(),
                                           ui->legendVPosSpinBox->value(),
@@ -719,86 +581,91 @@ void LineChart::updateDetachedLegendLayout()
     chart->legend()->update();
 }
 
-void LineChart::setId(QString str)
+void ScatterChart::samplingSizeChanged(int value)
 {
-   id = str;
-   this->setWindowTitle(QString("%1 \t|\t ID: %2").arg(ui->titleEdit->text()).arg(str));
+    foreach(QString key, items.keys())
+    {
+        items[key]->setSamplingSize( value );
+        items[key]->clear();
+    }
 
-   ui->idEdit->blockSignals(true);
-   ui->idEdit->setText( str );
-   ui->idEdit->blockSignals(false);
-
-   Config::getInstance()->setUnsavedChanges(true);
-
+    checkIfAnimationsAllowed();
+    settingsChanged();
 }
 
-void LineChart::setTitle(QString str)
+void ScatterChart::openGlStateChanged()
+{
+    ui->markerComboBox->blockSignals(true);
+    if(ui->useOpenGLCheckBox->isChecked())
+    {
+        ui->markerComboBox->setCurrentIndex( QScatterSeries::MarkerShapeRectangle );
+        ui->markerComboBox->setEnabled(false);
+    }
+    else
+    {
+        ui->markerComboBox->setEnabled(true);
+    }
+    ui->markerComboBox->blockSignals(false);
+
+    checkIfAnimationsAllowed();
+
+    foreach(XYChartPlotItem* item, items)
+    {
+        QScatterSeries* series = qobject_cast<QScatterSeries*>(item->series());
+        series->setUseOpenGL( ui->useOpenGLCheckBox->isChecked() );
+    }
+
+    settingsChanged();
+}
+
+void ScatterChart::checkIfAnimationsAllowed()
+{
+    ui->animationComboBox->blockSignals(true);
+
+    if(ui->bufferSpin->value() > 0 || ui->useOpenGLCheckBox->isChecked() )
+    {
+        ui->animationComboBox->setCurrentIndex( QChart::NoAnimation );
+        ui->animationComboBox->setEnabled(false);
+    }
+    else
+    {
+        ui->animationComboBox->setEnabled(true);
+    }
+
+    ui->animationComboBox->blockSignals(false);
+}
+
+void ScatterChart::markerPropertiesChanged()
+{
+    foreach(XYChartPlotItem* item, items)
+    {
+        QScatterSeries* series = qobject_cast<QScatterSeries*>(item->series());
+        series->setMarkerShape( (QScatterSeries::MarkerShape)ui->markerComboBox->currentIndex() );
+        series->setMarkerSize( ui->markerSizeSpinBox->value() );
+    }
+}
+
+void ScatterChart::setId(QString str)
+{
+    id = str;
+
+    this->setWindowTitle(QString("%1 \t|\t ID: %2").arg(ui->titleEdit->text()).arg(str));
+
+    ui->idEdit->blockSignals(true);
+    ui->idEdit->setText( str );
+    ui->idEdit->blockSignals(false);
+
+    Config::getInstance()->setUnsavedChanges(true);
+}
+
+void ScatterChart::setTitle(QString str)
 {
     chart->setTitle( str );
     this->setWindowTitle(QString("%1 \t|\t ID: %2").arg(str).arg(id));
     Config::getInstance()->setUnsavedChanges(true);
 }
 
-void LineChart::setFileForWriting()
-{
-    QString fileName = QFileDialog::getSaveFileName(
-                    this,
-                    "Save Plot to CSV",
-                    QString(),
-                    "Comma Seperated Values (*.csv);;All Files (*)"
-    );
-
-    ui->writeToFileEdit->setText( fileName );
-
-
-}
-
-void LineChart::startStopAutoWriting(bool start)
-{
-    if(ui->writeToFileEdit->text().isEmpty())
-    {
-        ui->writeToFileCheckBox->setChecked(false);
-        return;
-    }
-
-    if(start == true)
-    {
-        if(autoWriteFile != NULL)
-            delete autoWriteFile;
-
-        autoWriteFile = new QFile(ui->writeToFileEdit->text());
-
-        if(!autoWriteFile->open(QIODevice::WriteOnly))
-        {
-            qCritical() << "Error couldn't open file for writing";
-            return;
-        }
-
-        autoWriteStream.setDevice(autoWriteFile);
-
-        autoWriteStream.setRealNumberNotation( QTextStream::SmartNotation );
-
-        bool first = true;
-        foreach(QString key, items.keys())
-        {
-            if(first)
-                first = false;
-            else
-                autoWriteStream << ui->seperatorEdit->text();
-
-            autoWriteStream << key << "_x" << ui->seperatorEdit->text() << key << "_y";
-        }
-
-        autoWriteStream << endl;
-    }
-    else
-    {
-        if(autoWriteFile != NULL)
-            autoWriteFile->close();
-    }
-}
-
-void LineChart::savePlot()
+void ScatterChart::savePlot()
 {
     QString fileName = QFileDialog::getSaveFileName(
                     this,
@@ -856,37 +723,31 @@ void LineChart::savePlot()
     file.close();
 }
 
-void LineChart::startStopPlotting()
+void ScatterChart::startStopPlotting()
 {
     if(ui->startStopPlotBtn->isChecked())
     {
         doPlotting = true;
-        timer->start();
         plot();
 
-        startStopAutoWriting(ui->writeToFileCheckBox->isChecked());
     }
     else
     {
         doPlotting = false;
-        timer->stop();
-
-        if(autoWriteFile != NULL && autoWriteFile->isOpen() && ui->writeToFileCheckBox->isChecked())
-        {
-            autoWriteFile->close();
-            delete autoWriteFile;
-            autoWriteFile = NULL;
-        }
     }
 }
 
-void LineChart::blockAllSignals(bool b)
+void ScatterChart::blockAllSignals(bool b)
 {
     ui->idEdit->blockSignals(b);
     ui->titleEdit->blockSignals(b);
     ui->nameXaxis->blockSignals(b);
     ui->nameYaxis->blockSignals(b);
 
+    ui->markerComboBox->blockSignals(b);
+    ui->markerSizeSpinBox->blockSignals(b);
+
+    ui->useOpenGLCheckBox->blockSignals(b);
     ui->animationComboBox->blockSignals(b);
     ui->themeComboBox->blockSignals(b);
     ui->antialiasingCheckBox->blockSignals(b);
@@ -907,11 +768,7 @@ void LineChart::blockAllSignals(bool b)
     ui->xAxisTickCountSpinBox->blockSignals(b);
 }
 
-LineChart::~LineChart()
+ScatterChart::~ScatterChart()
 {
     delete ui;
 }
-
-
-
-

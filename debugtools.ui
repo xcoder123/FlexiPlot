@@ -167,6 +167,35 @@
               </property>
              </item>
             </item>
+            <item>
+             <property name="text">
+              <string>Scatter Chart</string>
+             </property>
+             <property name="icon">
+              <iconset resource="icons.qrc">
+               <normaloff>:/images/scatter.png</normaloff>:/images/scatter.png</iconset>
+             </property>
+             <item>
+              <property name="text">
+               <string>{P0|Random|1 1 2 2 3 3 0 6 5 4 2 3 0.5 9}</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>{P0|Random|255,0,0|1 1 2 2 3 3 0 6 5 4 2 3 0.5 9}</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>{P0|Random|1 1 2 2 3 3 0 6 5 4 2 3 0.5 9|Random2|5 8 6 9 2 2 4 5 6 7 3 1 5 4}</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>{P0|Random|1 1|Random2|5 8}</string>
+              </property>
+             </item>
+            </item>
            </widget>
           </item>
          </layout>

@@ -20,6 +20,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionAdd_Graph, SIGNAL(triggered()), this, SLOT(addLineChart()));
     connect(ui->actionAdd_Bar_Graph, SIGNAL(triggered(bool)), this, SLOT(addBarGraph()));
     connect(ui->actionAdd_Pie_Chart, SIGNAL(triggered(bool)), this, SLOT(addPieChart()));
+    connect(ui->actionAdd_Scatter_Chart, SIGNAL(triggered(bool)), this, SLOT(addScatterChart()));
     connect(ui->actionAdd_Map, SIGNAL(triggered()), this, SLOT(addMap()));
     connect(ui->actionSettings, SIGNAL(triggered()), this, SLOT(openSettings()));
 
@@ -207,22 +208,23 @@ void MainWindow::openDash(QString fileName)
             if(xml.name() == "Widget")
             {
                 AbstractWidget* widget;
-                if( xml.attributes().value("type").toInt() == LineChart::Type)
+                switch(xml.attributes().value("type").toInt())
                 {
-                    widget = new LineChart(this);
-                }
-                else if(xml.attributes().value("type").toInt() == BarGraph::Type)
-                {
-                    widget = new BarGraph(this);
-                }
-                else if(xml.attributes().value("type").toInt() == PieChart::Type)
-                {
-                    widget = new PieChart(this);
-                }
-                else
-                {
-                    QMessageBox::critical(this, tr("Error"), tr("Unknown widget type. Dash file might be of old version or corrupted"));
-                    return;
+                    case LineChart::Type:
+                        widget = new LineChart(this);
+                        break;
+                    case BarGraph::Type:
+                        widget = new BarGraph(this);
+                        break;
+                    case PieChart::Type:
+                        widget = new PieChart(this);
+                        break;
+                    case ScatterChart::Type:
+                        widget = new ScatterChart(this);
+                        break;
+                    default:
+                        QMessageBox::critical(this, tr("Error"), tr("Unknown widget type. Dash file might be of old version or corrupted"));
+                        return;
                 }
 
                 ui->mdiArea->addSubWindow(widget);
@@ -583,6 +585,22 @@ void MainWindow::addPieChart()
 
     widgets.append(pieChart);
 
+}
+
+void MainWindow::addScatterChart()
+{
+    Config::getInstance()->setUnsavedChanges(true);
+
+    ScatterChart* scatterChart = new ScatterChart(this);
+    scatterChart->setId( QString("P%1").arg( widgets.size()) );
+    QMdiSubWindow *subWindow = ui->mdiArea->addSubWindow(scatterChart);
+    subWindow->setWindowIcon( QIcon("://images/piechart.ico") );
+
+    scatterChart->show();
+
+    connect(scatterChart, SIGNAL(destroyed()), this, SLOT(deleteWidget()));
+
+    widgets.append(scatterChart);
 }
 
 void MainWindow::addMap()

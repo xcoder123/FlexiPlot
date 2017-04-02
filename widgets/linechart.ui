@@ -146,7 +146,7 @@
           <property name="geometry">
            <rect>
             <x>0</x>
-            <y>-356</y>
+            <y>-262</y>
             <width>387</width>
             <height>1022</height>
            </rect>
@@ -845,7 +845,7 @@
               </size>
              </property>
              <property name="title">
-              <string>Auto Write</string>
+              <string>Write To File</string>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_8">
               <item>

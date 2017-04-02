@@ -23,6 +23,7 @@
 
 #include "config.h"
 #include "abstractwidget.h"
+#include "xychartplotitem.h"
 
 #define AUTO_ADD_MARGIN_PERC        1.10        //How much % extra will be added to auto determined axes values
 
@@ -38,12 +39,9 @@ class LineChart;
 //    bool colorIsSet;
 //};
 
-struct line_plot_max_min_values_t {
-    QPointF maxValues;
-    QPointF minValues;
-};
 
-class LineChartPlotItem;
+
+class XYChartPlotItem;
 
 class LineChart : public AbstractWidget
 {
@@ -73,7 +71,6 @@ public:
     static bool validPacket(QString packet);
 
 private:
-    line_plot_max_min_values_t getMaxMinValues();
     void updateDetachedLegendLayout();
 
 
@@ -103,7 +100,7 @@ private:
     QString id;
 
     QChart *chart;
-    QHash<QString, LineChartPlotItem*> items;
+    QHash<QString, XYChartPlotItem*> items;
     QTimer* timer;
 
     QDateTimeAxis *dateAxisX;
@@ -114,45 +111,6 @@ private:
     QTextStream autoWriteStream;
 
     bool doPlotting;
-};
-
-
-class LineChartPlotItem
-{
-public:
-    LineChartPlotItem(QXYSeries *m_series, QString name);
-
-    void addData(QPointF p);
-    QVector<QPointF> getData() { return points; }
-
-    void setColor(QColor color);
-    QColor getColor() { return color; }
-    bool isColorSet() { return colorIsSet; }
-
-    void deleteFirst();
-    void clear();    
-
-    QXYSeries *series() { return m_series; }
-
-    QPointF maxValues();
-    QPointF minValues();
-
-    void setSamplingSize(int size) { m_samplingSize = size; }
-    int samplingSize() { return m_samplingSize; }
-
-    void update();
-
-private:
-    QString name;
-    QVector<QPointF> points;
-    QColor color;
-    QXYSeries *m_series;
-
-    bool colorIsSet;
-
-    int m_samplingSize;
-
-
 };
 
 #endif // LINECHART_H

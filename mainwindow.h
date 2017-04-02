@@ -23,6 +23,7 @@
 #include "widgets/bargraph.h"
 #include "widgets/piechart.h"
 #include "widgets/linechart.h"
+#include "widgets/scatterchart.h"
 //#include "mapper.h"
 
 namespace Ui {
@@ -57,6 +58,7 @@ private slots:
     void addLineChart();
     void addBarGraph();
     void addPieChart();
+    void addScatterChart();
     void addMap();
     void deleteWidget();
 

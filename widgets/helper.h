@@ -5,6 +5,7 @@
 #include "linechart.h"
 #include "bargraph.h"
 #include "piechart.h"
+#include "scatterchart.h"
 
 class Helper
 {

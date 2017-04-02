@@ -31,7 +31,9 @@ SOURCES += main.cpp\
     widgets/piechart.cpp \
     widgets/flexipieslice.cpp \
     aboutdialog.cpp \
-    widgets/linechart.cpp
+    widgets/linechart.cpp \
+    widgets/scatterchart.cpp \
+    widgets/xychartplotitem.cpp
 
 HEADERS  += mainwindow.h \
 #    widgets/plotitem.h \
@@ -48,7 +50,9 @@ HEADERS  += mainwindow.h \
     widgets/piechart.h \
     widgets/flexipieslice.h \
     aboutdialog.h \
-    widgets/linechart.h
+    widgets/linechart.h \
+    widgets/scatterchart.h \
+    widgets/xychartplotitem.h
 
 FORMS    += mainwindow.ui \
     settings.ui \
@@ -59,7 +63,8 @@ FORMS    += mainwindow.ui \
     debugtools.ui \
     widgets/piechart.ui \
     aboutdialog.ui \
-    widgets/linechart.ui
+    widgets/linechart.ui \
+    widgets/scatterchart.ui
 
 RESOURCES += \
     icons.qrc \
