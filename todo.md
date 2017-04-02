@@ -1,6 +1,6 @@
 # TO-DO list
 
-- Scatter Plot
+- Scatter Plot (done)
 - Line Chart logarithmic axis
 - Instructions with Qt Help Assistent
 - Languages
