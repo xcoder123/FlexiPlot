@@ -1,6 +1,7 @@
 # TO-DO list
 
 - Scatter Plot (done)
+- Scatter Plot show/hide series
 - Line Chart logarithmic axis
 - Instructions with Qt Help Assistent
 - Languages
