@@ -110,7 +110,7 @@ void PieChart::serialPacket(QStringList packet)
         QRegExp rx("\\d{1,},\\d{1,},\\d{1,}");
         QRegExpValidator v(rx,this);
 
-        QStringList values;
+//        QStringList values;
         if(packet[i+1].contains(rx)) //This set has a color specified
         {
             QStringList color = packet[i+1].split(",");
